@@ -54,7 +54,7 @@ func (cache *SchedulerCache) BuildCache() error {
 		return err
 	} else {
 		for _, pod := range pods {
-			if utils.GetGPUMemoryFromPodAnnotation(pod) <= uint(0) {
+			if utils.GetGPUCountFromPodAnnotation(pod) <= 0 {
 				continue
 			}
 

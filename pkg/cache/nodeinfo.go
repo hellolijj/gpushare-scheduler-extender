@@ -84,16 +84,18 @@ func (n *NodeInfo) removePod(pod *v1.Pod) {
 	n.rwmu.Lock()
 	defer n.rwmu.Unlock()
 
-	id := utils.GetGPUIDFromAnnotation(pod)
-	if id >= 0 {
-		dev, found := n.devs[id]
-		if !found {
-			log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
+	ids := utils.GetGPUIDFromAnnotation(pod)
+	for _, id := range ids {
+		if id >= 0 {
+			dev, found := n.devs[id]
+			if !found {
+				log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
+			} else {
+				dev.removePod(pod)
+			}
 		} else {
-			dev.removePod(pod)
+			log.Printf("warn: Pod %s in ns %s is not set the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
 		}
-	} else {
-		log.Printf("warn: Pod %s in ns %s is not set the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
 	}
 }
 
@@ -102,21 +104,23 @@ func (n *NodeInfo) addOrUpdatePod(pod *v1.Pod) (added bool) {
 	n.rwmu.Lock()
 	defer n.rwmu.Unlock()
 
-	id := utils.GetGPUIDFromAnnotation(pod)
-	log.Printf("debug: addOrUpdatePod() Pod %s in ns %s with the GPU ID %d should be added to device map",
+	ids := utils.GetGPUIDFromAnnotation(pod)
+	log.Printf("debug: addOrUpdatePod() Pod %s in ns %s with the GPU IDs %v should be added to device map",
 		pod.Name,
 		pod.Namespace,
-		id)
-	if id >= 0 {
-		dev, found := n.devs[id]
-		if !found {
-			log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
-		} else {
-			dev.addPod(pod)
-			added = true
+		ids)
+	if len(ids) >= 0 {
+		for _, id := range ids {
+			dev, found := n.devs[id]
+			if !found {
+				log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
+			} else {
+				dev.addPod(pod)
+				added = true
+			}
 		}
 	} else {
-		log.Printf("warn: Pod %s in ns %s is not set the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
+		log.Printf("warn: Pod %s in ns %s is not set the GPU ID in node %s", pod.Name, pod.Namespace, n.name)
 	}
 	return added
 }

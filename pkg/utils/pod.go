@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"k8s.io/api/core/v1"
+	"strings"
 )
 
 // AssignedNonTerminatedPod selects pods that are assigned and non-terminal (scheduled and running).
@@ -43,21 +44,18 @@ func IsGSoCPod(pod *v1.Pod) bool {
 
 
 // GetGPUIDFromAnnotation gets GPU ID from Annotation
-func GetGPUIDFromAnnotation(pod *v1.Pod) int {
-	id := -1
+func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
+	ids := []int{}
 	if len(pod.ObjectMeta.Annotations) > 0 {
 		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
 		if found {
-			var err error
-			id, err = strconv.Atoi(value)
-			if err != nil {
-				log.Printf("warn: Failed due to %v for pod %s in ns %s", err, pod.Name, pod.Namespace)
-				id = -1
+			idList := strings.Split(value, ",")
+			for id := range idList {
+				ids = append(ids, int(id))
 			}
 		}
 	}
-
-	return id
+	return ids
 }
 
 // GetGPUIDFromEnv gets GPU ID from Env
@@ -91,8 +89,8 @@ loop:
 	return devIdx
 }
 
-// GetGPUMemoryFromPodAnnotation gets the GPU Memory of the pod, choose the larger one between gpu memory and gpu init container memory
-func GetGPUMemoryFromPodAnnotation(pod *v1.Pod) (gpuMemory uint) {
+// GetGPUCountFromPodAnnotation gets the GPU Count of the pod, choose the larger one between gpu memory and gpu init container memory
+func GetGPUCountFromPodAnnotation(pod *v1.Pod) (gpuCount int) {
 	if len(pod.ObjectMeta.Annotations) > 0 {
 		value, found := pod.ObjectMeta.Annotations[EnvResourceByPod]
 		if found {
@@ -100,17 +98,17 @@ func GetGPUMemoryFromPodAnnotation(pod *v1.Pod) (gpuMemory uint) {
 			if s < 0 {
 				s = 0
 			}
-
-			gpuMemory += uint(s)
+			
+			gpuCount += s
 		}
 	}
 
-	log.Printf("debug: pod %s in ns %s with status %v has GPU Mem %d",
+	log.Printf("debug: pod %s in ns %s with status %v has GPU Count %d",
 		pod.Name,
 		pod.Namespace,
 		pod.Status.Phase,
-		gpuMemory)
-	return gpuMemory
+		gpuCount)
+	return gpuCount
 }
 
 func GetGPUCountFromContainerResource(container v1.Container) int {

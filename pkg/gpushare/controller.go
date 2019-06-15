@@ -173,7 +173,7 @@ func (c *Controller) runWorker() {
 // invoked concurrently with the same key.
 func (c *Controller) syncPod(key string) (forget bool, err error) {
 	ns, name, err := clientgocache.SplitMetaNamespaceKey(key)
-	log.Printf("debug: begin to sync gpu topology pod %s in ns %s", name, ns)
+	log.Printf("debug: begin to sync gpu  pod %s in ns %s", name, ns)
 	if err != nil {
 		return false, err
 	}
@@ -274,7 +274,7 @@ func (c *Controller) updatePodInCache(oldObj, newObj interface{}) {
 		needUpdate = true
 	}
 	// 2. Need update when it's unknown pod, and GPU annotation has been set
-	if !c.schedulerCache.KnownPod(podUID) && utils.GetGPUIDFromAnnotation(newPod) >= 0 {
+	if !c.schedulerCache.KnownPod(podUID) && len(utils.GetGPUIDFromAnnotation(newPod)) >= 0 {
 		needUpdate = true
 	}
 	if needUpdate {
