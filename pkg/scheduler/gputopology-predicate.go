@@ -10,9 +10,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewGPUsharePredicate(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *Predicate {
+func NewGPUTopologyPredicate(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *Predicate {
 	return &Predicate{
-		Name: "gpusharingfilter",
+		Name: "gputopologyfilter",
 		Func: func(pod *v1.Pod, nodeName string, c *cache.SchedulerCache) (bool, error) {
 			log.Printf("debug: check if the pod name %s can be scheduled on node %s", pod.Name, nodeName)
 			nodeInfo, err := c.GetNodeInfo(nodeName)
@@ -20,8 +20,8 @@ func NewGPUsharePredicate(clientset *kubernetes.Clientset, c *cache.SchedulerCac
 				return false, err
 			}
 
-			if !utils.IsGPUSharingNode(nodeInfo.GetNode()) {
-				return false, fmt.Errorf("The node %s is not for GPU share, need skip", nodeName)
+			if !utils.IsGPUTopologyNode(nodeInfo.GetNode()) {
+				return false, fmt.Errorf("the node %s is not for GPU share, need skip", nodeName)
 			}
 
 			allocatable := nodeInfo.Assume(pod)

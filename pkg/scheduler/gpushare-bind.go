@@ -18,7 +18,7 @@ const (
 
 func NewGPUShareBind(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *Bind {
 	return &Bind{
-		Name: "gpusharingbinding",
+		Name: "gputopologybinding",
 		Func: func(name string, namespace string, podUID types.UID, node string, c *cache.SchedulerCache) error {
 			pod, err := getPod(name, namespace, podUID, clientset, c)
 			if err != nil {

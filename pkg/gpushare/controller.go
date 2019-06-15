@@ -64,7 +64,7 @@ func NewController(clientset *kubernetes.Clientset, kubeInformerFactory kubeinfo
 	eventBroadcaster := record.NewBroadcaster()
 	// eventBroadcaster.StartLogging(log.Infof)
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: clientset.CoreV1().Events("")})
-	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "gpushare-schd-extender"})
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "gsoc-schd-extender"})
 
 	c := &Controller{
 		clientset:      clientset,
@@ -79,11 +79,11 @@ func NewController(clientset *kubernetes.Clientset, kubeInformerFactory kubeinfo
 			switch t := obj.(type) {
 			case *v1.Pod:
 				// log.Printf("debug: added pod %s in ns %s", t.Name, t.Namespace)
-				return utils.IsGPUsharingPod(t)
+				return utils.IsGSoCPod(t)
 			case clientgocache.DeletedFinalStateUnknown:
 				if pod, ok := t.Obj.(*v1.Pod); ok {
 					log.Printf("debug: delete pod %s in ns %s", pod.Name, pod.Namespace)
-					return utils.IsGPUsharingPod(pod)
+					return utils.IsGSoCPod(pod)
 				}
 				runtime.HandleError(fmt.Errorf("unable to convert object %T to *v1.Pod in %T", obj, c))
 				return false
@@ -145,7 +145,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer runtime.HandleCrash()
 	defer c.podQueue.ShutDown()
 
-	log.Println("info: Starting GPU Sharing Controller.")
+	log.Println("info: Starting GPU Topology Scheduler Controller.")
 	log.Println("info: Waiting for informer caches to sync")
 
 	log.Printf("info: Starting %v workers.", threadiness)
@@ -173,7 +173,7 @@ func (c *Controller) runWorker() {
 // invoked concurrently with the same key.
 func (c *Controller) syncPod(key string) (forget bool, err error) {
 	ns, name, err := clientgocache.SplitMetaNamespaceKey(key)
-	log.Printf("debug: begin to sync gpushare pod %s in ns %s", name, ns)
+	log.Printf("debug: begin to sync gpu topology pod %s in ns %s", name, ns)
 	if err != nil {
 		return false, err
 	}

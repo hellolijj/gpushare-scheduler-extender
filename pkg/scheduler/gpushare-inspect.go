@@ -6,7 +6,7 @@ import (
 
 func NewGPUShareInspect(c *cache.SchedulerCache) *Inspect {
 	return &Inspect{
-		Name:  "gpushareinspect",
+		Name:  "gputopologyinspect",
 		cache: c,
 	}
 }
@@ -25,8 +25,7 @@ type Node struct {
 
 type Device struct {
 	ID       int    `json:"id"`
-	TotalGPU uint   `json:"totalGPU"`
-	UsedGPU  uint   `json:"usedGPU"`
+	isUsed   bool   `json:"usUsed""`
 	Pods     []*Pod `json:"pods"`
 }
 

@@ -69,7 +69,7 @@ func main() {
 	initKubeClient()
 	port := os.Getenv("PORT")
 	if _, err := strconv.Atoi(port); err != nil {
-		port = "39999"
+		port = "39997"
 	}
 
 	// Set up signals so we handle the first shutdown signal gracefully.
@@ -87,17 +87,17 @@ func main() {
 
 	go controller.Run(threadness, stopCh)
 
-	gpusharePredicate := scheduler.NewGPUsharePredicate(clientset, controller.GetSchedulerCache())
-	gpushareBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache())
-	gpushareInspect := scheduler.NewGPUShareInspect(controller.GetSchedulerCache())
+	gpuTopologyPredicate := scheduler.NewGPUTopologyPredicate(clientset, controller.GetSchedulerCache())
+	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache())
+	gpuTopologyInspect := scheduler.NewGPUShareInspect(controller.GetSchedulerCache())
 
 	router := httprouter.New()
 
 	routes.AddPProf(router)
 	routes.AddVersion(router)
-	routes.AddPredicate(router, gpusharePredicate)
-	routes.AddBind(router, gpushareBind)
-	routes.AddInspect(router, gpushareInspect)
+	routes.AddPredicate(router, gpuTopologyPredicate)
+	routes.AddBind(router, gpuTopologyBind)
+	routes.AddInspect(router, gpuTopologyInspect)
 
 	log.Printf("info: server starting on the port :%s", port)
 	if err := http.ListenAndServe(":"+port, router); err != nil {

@@ -36,10 +36,11 @@ func IsCompletePod(pod *v1.Pod) bool {
 	return false
 }
 
-// IsGPUsharingPod determines if it's the pod for GPU sharing
-func IsGPUsharingPod(pod *v1.Pod) bool {
-	return GetGPUMemoryFromPodResource(pod) > 0
+// IsGSoCPod determines if it's the pod for gsoc scheduler pod
+func IsGSoCPod(pod *v1.Pod) bool {
+	return true
 }
+
 
 // GetGPUIDFromAnnotation gets GPU ID from Annotation
 func GetGPUIDFromAnnotation(pod *v1.Pod) int {
@@ -112,38 +113,15 @@ func GetGPUMemoryFromPodAnnotation(pod *v1.Pod) (gpuMemory uint) {
 	return gpuMemory
 }
 
-// GetGPUMemoryFromPodEnv gets the GPU Memory of the pod, choose the larger one between gpu memory and gpu init container memory
-func GetGPUMemoryFromPodEnv(pod *v1.Pod) (gpuMemory uint) {
-	for _, container := range pod.Spec.Containers {
-		gpuMemory += getGPUMemoryFromContainerEnv(container)
+func GetGPUCountFromContainerResource(container v1.Container) int {
+	var total int
+	if val, ok := container.Resources.Limits[ResourceName]; ok {
+		total += int(val.Value())
 	}
-	log.Printf("debug: pod %s in ns %s with status %v has GPU Mem %d",
-		pod.Name,
-		pod.Namespace,
-		pod.Status.Phase,
-		gpuMemory)
-	return gpuMemory
+	return total
 }
 
-func getGPUMemoryFromContainerEnv(container v1.Container) (gpuMemory uint) {
-	gpuMemory = 0
-loop:
-	for _, env := range container.Env {
-		if env.Name == EnvResourceByPod {
-			s, _ := strconv.Atoi(env.Value)
-			if s < 0 {
-				s = 0
-			}
-			gpuMemory = uint(s)
-			break loop
-		}
-	}
-
-	return gpuMemory
-}
-
-// GetGPUMemoryFromPodResource gets GPU Memory of the Pod
-func GetGPUMemoryFromPodResource(pod *v1.Pod) int {
+func GetGPUCountFromPodResource(pod *v1.Pod) int {
 	var total int
 	containers := pod.Spec.Containers
 	for _, container := range containers {
@@ -154,53 +132,25 @@ func GetGPUMemoryFromPodResource(pod *v1.Pod) int {
 	return total
 }
 
-// GetGPUMemoryFromPodResource gets GPU Memory of the Container
-func GetGPUMemoryFromContainerResource(container v1.Container) int {
-	var total int
-	if val, ok := container.Resources.Limits[ResourceName]; ok {
-		total += int(val.Value())
-	}
-	return total
-}
 
-// GetUpdatedPodEnvSpec updates pod env with devId
-func GetUpdatedPodEnvSpec(oldPod *v1.Pod, devId int, totalGPUMemByDev int) (newPod *v1.Pod) {
-	newPod = oldPod.DeepCopy()
-	for i, c := range newPod.Spec.Containers {
-		gpuMem := GetGPUMemoryFromContainerResource(c)
-
-		if gpuMem > 0 {
-			envs := []v1.EnvVar{
-				// v1.EnvVar{Name: EnvNVGPU, Value: fmt.Sprintf("%d", devId)},
-				v1.EnvVar{Name: EnvResourceIndex, Value: fmt.Sprintf("%d", devId)},
-				v1.EnvVar{Name: EnvResourceByPod, Value: fmt.Sprintf("%d", gpuMem)},
-				v1.EnvVar{Name: EnvResourceByDev, Value: fmt.Sprintf("%d", totalGPUMemByDev)},
-				v1.EnvVar{Name: EnvAssignedFlag, Value: "false"},
-			}
-
-			for _, env := range envs {
-				newPod.Spec.Containers[i].Env = append(newPod.Spec.Containers[i].Env,
-					env)
-			}
-		}
-	}
-
-	return newPod
-}
-
-// GetUpdatedPodAnnotationSpec updates pod env with devId
-func GetUpdatedPodAnnotationSpec(oldPod *v1.Pod, devId int, totalGPUMemByDev int) (newPod *v1.Pod) {
+// GetUpdatedPodAnnotationSpec updates pod env with devIds
+func GetUpdatedPodAnnotationSpec(oldPod *v1.Pod, devIds []uint) (newPod *v1.Pod) {
 	newPod = oldPod.DeepCopy()
 	if len(newPod.ObjectMeta.Annotations) == 0 {
 		newPod.ObjectMeta.Annotations = map[string]string{}
 	}
+	var devs string
+	for i, devId := range devIds {
+		if i == 0 {
+			devs += fmt.Sprintf("%d", devId)
+		} else {
+			devs += fmt.Sprintf("_%d", devId)
+		}
+	}
 
 	now := time.Now()
-	newPod.ObjectMeta.Annotations[EnvResourceIndex] = fmt.Sprintf("%d", devId)
-	newPod.ObjectMeta.Annotations[EnvResourceByDev] = fmt.Sprintf("%d", totalGPUMemByDev)
-	newPod.ObjectMeta.Annotations[EnvResourceByPod] = fmt.Sprintf("%d", GetGPUMemoryFromPodResource(newPod))
+	newPod.ObjectMeta.Annotations[EnvResourceIndex] = devs
 	newPod.ObjectMeta.Annotations[EnvAssignedFlag] = "false"
 	newPod.ObjectMeta.Annotations[EnvResourceAssumeTime] = fmt.Sprintf("%d", now.UnixNano())
-
 	return newPod
 }
