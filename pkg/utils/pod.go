@@ -111,14 +111,6 @@ func GetGPUCountFromPodAnnotation(pod *v1.Pod) (gpuCount int) {
 	return gpuCount
 }
 
-func GetGPUCountFromContainerResource(container v1.Container) int {
-	var total int
-	if val, ok := container.Resources.Limits[ResourceName]; ok {
-		total += int(val.Value())
-	}
-	return total
-}
-
 func GetGPUCountFromPodResource(pod *v1.Pod) int {
 	var total int
 	containers := pod.Spec.Containers

@@ -10,7 +10,7 @@
       "nodeCacheCapable": true,
       "managedResources": [
         {
-          "name": "aliyun.com/gpu-mem",
+          "name": "aliyun.com/gpu-count",
           "ignoredByScheduler": false
         }
       ],
