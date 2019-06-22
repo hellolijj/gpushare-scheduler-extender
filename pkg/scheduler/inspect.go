@@ -64,6 +64,7 @@ func buildNode(info *cache.NodeInfo) *Node {
 		TotalGPU: uint(len(devInfos)),
 		UsedGPU:  usedGPU,
 		Devices:  devs,
+		GpuTopology: info.GetGPUTopology(),
 	}
 
 }

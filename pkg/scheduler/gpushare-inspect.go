@@ -21,6 +21,7 @@ type Node struct {
 	TotalGPU uint      `json:"totalGPU"`
 	UsedGPU  uint      `json:"usedGPU"`
 	Devices  []*Device `json:"devs"`
+	GpuTopology map[uint]map[uint]uint `json:"gpuTopology"`
 }
 
 type Device struct {

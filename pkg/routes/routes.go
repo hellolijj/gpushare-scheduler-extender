@@ -64,7 +64,7 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 
 		var buf bytes.Buffer
 		body := io.TeeReader(r.Body, &buf)
-		// log.Print("info: ", predicate.Name, " ExtenderArgs = ", buf.String())
+		log.Print("info: ", predicate.Name, " ExtenderArgs = ", buf.String())
 
 		var extenderArgs schedulerapi.ExtenderArgs
 		var extenderFilterResult *schedulerapi.ExtenderFilterResult
