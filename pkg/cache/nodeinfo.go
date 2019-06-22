@@ -34,8 +34,8 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
 		devMap[i] = newDeviceInfo(i)
 	}
-
-	return &NodeInfo{
+	
+	nodeInfo := &NodeInfo{
 		name:           node.Name,
 		node:           node,
 		devs:           devMap,
@@ -43,6 +43,9 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		gpuTopology:    utils.GetGPUTopologyInNode(node),
 		rwmu:           new(sync.RWMutex),
 	}
+	
+	log.Printf("debug: node %s has nodeinfo %v", node.Name, nodeInfo)
+	return nodeInfo
 }
 
 func (n *NodeInfo) GetName() string {
