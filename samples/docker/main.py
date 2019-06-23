@@ -27,14 +27,4 @@ def train(fraction=1.0):
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--total', type=float, default=1000,
-                      help='Total GPU memory.')
-	parser.add_argument('--allocated', type=float, default=1000,
-                      help='Allocated GPU memory.')
-	FLAGS, unparsed = parser.parse_known_args()
-	# fraction = FLAGS.allocated / FLAGS.total * 0.85
-	fraction = round( FLAGS.allocated * 0.7 / FLAGS.total , 1 )
-
-	print(fraction)
-	train(fraction)
+	train(0.7)

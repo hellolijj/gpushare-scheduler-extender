@@ -232,9 +232,14 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 		log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 		log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 		if availableGPUs > 0 && availableGPUs - reqGPU >= 0 {
+			allocatedGPU := 0
 			for  _, dev := range n.devs {
-				if dev.isUsed == false {
+				// TODO: to add gpu topology
+				
+				if dev.isUsed == false && reqGPU - allocatedGPU > 0 {
 					candidateDevID = append(candidateDevID, uint(dev.idx))
+					found = true
+					allocatedGPU ++
 				}
 			}
 		}
