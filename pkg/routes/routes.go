@@ -64,7 +64,6 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 
 		var buf bytes.Buffer
 		body := io.TeeReader(r.Body, &buf)
-		log.Print("info: ", predicate.Name, " ExtenderArgs = ", buf.String())
 
 		var extenderArgs schedulerapi.ExtenderArgs
 		var extenderFilterResult *schedulerapi.ExtenderFilterResult
@@ -78,7 +77,7 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 				Error:       err.Error(),
 			}
 		} else {
-			log.Printf("debug: gputopologyfilter ExtenderArgs =%v", extenderArgs)
+			log.Printf("debug: gputopologyfilter ExtenderArgs = %v", extenderArgs)
 			extenderFilterResult = predicate.Handler(extenderArgs)
 		}
 
@@ -118,7 +117,7 @@ func BindRoute(bind *scheduler.Bind) httprouter.Handle {
 			}
 			failed = true
 		} else {
-			log.Printf("debug: gpusharingBind ExtenderArgs =%v", extenderBindingArgs)
+			log.Printf("debug: gputopologyBind ExtenderArgs =%v", extenderBindingArgs)
 			extenderBindingResult = bind.Handler(extenderBindingArgs)
 		}
 

@@ -231,7 +231,7 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	if reqGPU > 0 {
 		log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 		log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
-		if availableGPUs > 0 && availableGPUs - reqGPU > 0 {
+		if availableGPUs > 0 && availableGPUs - reqGPU >= 0 {
 			for  _, dev := range n.devs {
 				if dev.isUsed == false {
 					candidateDevID = append(candidateDevID, uint(dev.idx))
