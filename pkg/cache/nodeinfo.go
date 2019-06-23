@@ -138,12 +138,13 @@ func (n *NodeInfo) Assume(pod *v1.Pod) (allocatable bool) {
 	availableGPUs := n.getAvailableGPUs()
 	reqGPU := utils.GetGPUCountFromPodResource(pod)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
+	log.Printf("debug: requestGPUs: %v in node %s", reqGPU, n.name)
 	
-	if availableGPUs > 0 && availableGPUs-reqGPU > 0 {
+	if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 		allocatable = true
 	}
 	
-	return allocatable
+	return
 }
 
 func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err error) {

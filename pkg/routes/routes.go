@@ -78,7 +78,7 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 				Error:       err.Error(),
 			}
 		} else {
-			log.Printf("debug: gpusharingfilter ExtenderArgs =%v", extenderArgs)
+			log.Printf("debug: gputopologyfilter ExtenderArgs =%v", extenderArgs)
 			extenderFilterResult = predicate.Handler(extenderArgs)
 		}
 
