@@ -17,17 +17,17 @@ type Result struct {
 }
 
 type Node struct {
-	Name     string    `json:"name"`
-	TotalGPU uint      `json:"totalGPU"`
-	UsedGPU  uint      `json:"usedGPU"`
-	Devices  []*Device `json:"devs"`
+	Name        string                 `json:"name"`
+	TotalGPU    uint                   `json:"totalGPU"`
+	UsedGPU     uint                   `json:"usedGPU"`
+	Devices     []*Device              `json:"devs"`
 	GpuTopology map[uint]map[uint]uint `json:"gpuTopology"`
 }
 
 type Device struct {
-	ID       int    `json:"id"`
-	isUsed   bool   `json:"usUsed""`
-	Pods     []*Pod `json:"pods"`
+	ID     int    `json:"id"`
+	isUsed bool   `json:"usUsed""`
+	Pods   []*Pod `json:"pods"`
 }
 
 type Pod struct {

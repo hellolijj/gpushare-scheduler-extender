@@ -37,7 +37,7 @@ func buildNode(info *cache.NodeInfo) *Node {
 
 	for i, devInfo := range devInfos {
 		dev := &Device{
-			ID:       i,
+			ID: i,
 		}
 
 		podInfos := devInfo.GetPods()
@@ -55,15 +55,15 @@ func buildNode(info *cache.NodeInfo) *Node {
 		dev.Pods = pods
 		devs = append(devs, dev)
 		if dev.isUsed {
-			usedGPU ++
+			usedGPU++
 		}
 	}
 
 	return &Node{
-		Name:     info.GetName(),
-		TotalGPU: uint(len(devInfos)),
-		UsedGPU:  usedGPU,
-		Devices:  devs,
+		Name:        info.GetName(),
+		TotalGPU:    uint(len(devInfos)),
+		UsedGPU:     usedGPU,
+		Devices:     devs,
 		GpuTopology: info.GetGPUTopology(),
 	}
 

@@ -12,7 +12,6 @@ func IsGPUTopologyNode(node *v1.Node) bool {
 	return GetGPUCountInNode(node) > 0
 }
 
-
 // Get the GPU count of the node
 func GetGPUCountInNode(node *v1.Node) int {
 	val, ok := node.Status.Capacity[ResourceName]
@@ -24,6 +23,7 @@ func GetGPUCountInNode(node *v1.Node) int {
 	return int(val.Value())
 }
 
+// key 表示 设备的id /dev/nvidia%d
 func GetGPUTopologyInNode(node *v1.Node) map[uint]map[uint]uint {
 	topology := make(map[uint]map[uint]uint)
 	if !IsGPUTopologyNode(node) {
@@ -38,6 +38,6 @@ func GetGPUTopologyInNode(node *v1.Node) map[uint]map[uint]uint {
 			topology[gpu1] = map[uint]uint{gpu2: topo}
 		}
 	}
-	
+
 	return topology
 }

@@ -42,7 +42,6 @@ func IsGSoCPod(pod *v1.Pod) bool {
 	return true
 }
 
-
 // GetGPUIDFromAnnotation gets GPU ID from Annotation
 func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
 	ids := []int{}
@@ -98,7 +97,7 @@ func GetGPUCountFromPodAnnotation(pod *v1.Pod) (gpuCount int) {
 			if s < 0 {
 				s = 0
 			}
-			
+
 			gpuCount += s
 		}
 	}
@@ -121,7 +120,6 @@ func GetGPUCountFromPodResource(pod *v1.Pod) int {
 	}
 	return total
 }
-
 
 // GetUpdatedPodAnnotationSpec updates pod env with devIds
 func GetUpdatedPodAnnotationSpec(oldPod *v1.Pod, devIds []uint) (newPod *v1.Pod) {

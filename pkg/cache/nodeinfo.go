@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
@@ -17,13 +18,14 @@ const (
 
 // NodeInfo is node level aggregated information.
 type NodeInfo struct {
-	name           string
-	node           *v1.Node
-	devs           map[int]*DeviceInfo
-	gpuUsed        int
-	gpuCount       int
-	gpuTopology    map[uint]map[uint]uint
-	rwmu           *sync.RWMutex
+	name        string
+	node        *v1.Node
+	devs        map[int]*DeviceInfo
+	gpuUsed     int
+	gpuCount    int
+	gpuTopology map[uint]map[uint]uint
+	gpuEdges    Edges
+	rwmu        *sync.RWMutex
 }
 
 // Create Node Level
@@ -32,18 +34,34 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 
 	devMap := map[int]*DeviceInfo{}
 	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
-		devMap[i] = newDeviceInfo(i)
+		devMap[i] = newDeviceInfo(i) // 这里的i 表示什么？device id 吗？
 	}
-	
+
+	gpuTopology := utils.GetGPUTopologyInNode(node)
+
+	gpuEdges := Edges{}
+	totalGpu := len(devMap)
+
+	if totalGpu >= 2 {
+		for i := 0; i < totalGpu; i++ {
+			for j := i + 1; j < totalGpu; j++ {
+				gpuEdges = append(gpuEdges, &Edge{uint(i), uint(j), gpuTopology[uint(i)][uint(j)]})
+			}
+		}
+	}
+
+	sort.Sort(gpuEdges)
+
 	nodeInfo := &NodeInfo{
-		name:           node.Name,
-		node:           node,
-		devs:           devMap,
-		gpuCount:       utils.GetGPUCountInNode(node),
-		gpuTopology:    utils.GetGPUTopologyInNode(node),
-		rwmu:           new(sync.RWMutex),
+		name:        node.Name,
+		node:        node,
+		devs:        devMap,
+		gpuCount:    utils.GetGPUCountInNode(node),
+		gpuTopology: gpuTopology,
+		gpuEdges:    gpuEdges,
+		rwmu:        new(sync.RWMutex),
 	}
-	
+
 	log.Printf("debug: node %s has nodeinfo %v", node.Name, nodeInfo)
 	return nodeInfo
 }
@@ -64,7 +82,6 @@ func (n *NodeInfo) GetNode() *v1.Node {
 	return n.node
 }
 
-
 func (n *NodeInfo) GetGPUCount() int {
 	return n.gpuCount
 }
@@ -77,7 +94,7 @@ func (n *NodeInfo) GetGPUUsedCount() int {
 	count := 0
 	for _, dev := range n.devs {
 		if dev.isUsed {
-			count ++
+			count++
 		}
 	}
 	return count
@@ -131,19 +148,19 @@ func (n *NodeInfo) addOrUpdatePod(pod *v1.Pod) (added bool) {
 // check if the pod can be allocated on the node
 func (n *NodeInfo) Assume(pod *v1.Pod) (allocatable bool) {
 	allocatable = false
-	
+
 	n.rwmu.RLock()
 	defer n.rwmu.RUnlock()
-	
+
 	availableGPUs := n.getAvailableGPUs()
 	reqGPU := utils.GetGPUCountFromPodResource(pod)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 	log.Printf("debug: requestGPUs: %v in node %s", reqGPU, n.name)
-	
+
 	if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 		allocatable = true
 	}
-	
+
 	return
 }
 
@@ -231,15 +248,18 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	if reqGPU > 0 {
 		log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 		log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
-		if availableGPUs > 0 && availableGPUs - reqGPU >= 0 {
+		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			allocatedGPU := 0
-			for  _, dev := range n.devs {
-				// TODO: to add gpu topology
-				
-				if dev.isUsed == false && reqGPU - allocatedGPU > 0 {
+
+			//topology, req, => ids
+			for _, dev := range n.devs {
+				// TODO: to add gpu topology, 这里使用 prim 算法
+				// num, dev,
+
+				if dev.isUsed == false && reqGPU-allocatedGPU > 0 {
 					candidateDevID = append(candidateDevID, uint(dev.idx))
 					found = true
-					allocatedGPU ++
+					allocatedGPU++
 				}
 			}
 		}
@@ -267,7 +287,6 @@ func (n *NodeInfo) getAvailableGPUs() (availableGPUs int) {
 	return availableGPUs
 }
 
-
 func (n *NodeInfo) getUsedGPUs() (usedGPUs int) {
 	usedGPUs = n.GetGPUUsedCount()
 	log.Printf("debug: getUsedGPUs: %v in node %s, and devs %v", usedGPUs, n.name, n.devs)
@@ -279,3 +298,55 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 	log.Printf("debug: getAllGPUs: %v in node %s, and dev %v", allGPUs, n.name, n.devs)
 	return allGPUs
 }
+
+// 根据 gpu topology 返回 device list
+func (n *NodeInfo) kruskal(pod *v1.Pod, req int) (ids []uint) {
+	if req <= 0 || req < n.getAllGPUs() {
+		return
+	}
+
+	// req == 1, 随机返回device id
+	if req == 1 {
+		for _, dev := range n.devs {
+			if dev.isUsed == false {
+				ids = append(ids, uint(dev.idx))
+				return
+			}
+		}
+	}
+
+	ids, ok := n.getUnusedShortestTwoDevices()
+
+	if !ok {
+		return
+	}
+
+	if req == 2 {
+		return
+	}
+
+}
+
+// get Unused Shortest TwoDevices
+func (n *NodeInfo) getUnusedShortestTwoDevices() (ids []uint, isShortestDistance bool) {
+	topology := n.gpuTopology
+	var shortestDev1, shortestDev2 uint
+	shortestDis := uint(100)
+	isShortestDistance = false
+	for dev1, tmp := range topology {
+		for dev2, distance := range tmp {
+			if n.devs[int(dev1)].isUsed == false && n.devs[int(dev2)].isUsed == false && distance != 0 && distance < shortestDis {
+				shortestDev1, shortestDev2, shortestDis = dev1, dev2, distance
+				isShortestDistance = true
+			}
+		}
+	}
+	ids = []uint{shortestDev1, shortestDev2}
+	return
+}
+
+/*
+有一个问题
+n.dev[下标], topology
+这个下标，还有这个topology map 里的key 是否表示的同一个意思？是否就是 在 node 下的 dev id？ 是的。
+*/

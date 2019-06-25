@@ -11,7 +11,7 @@ import (
 type DeviceInfo struct {
 	idx    int
 	podMap map[types.UID]*v1.Pod
-	rwmu        *sync.RWMutex
+	rwmu   *sync.RWMutex
 	isUsed bool
 }
 
@@ -23,15 +23,13 @@ func (d *DeviceInfo) GetPods() []*v1.Pod {
 	return pods
 }
 
-
 func newDeviceInfo(index int) *DeviceInfo {
 	return &DeviceInfo{
-		idx:         index,
-		podMap:      map[types.UID]*v1.Pod{},
-		rwmu:        new(sync.RWMutex),
+		idx:    index,
+		podMap: map[types.UID]*v1.Pod{},
+		rwmu:   new(sync.RWMutex),
 	}
 }
-
 
 func (d *DeviceInfo) addPod(pod *v1.Pod) {
 	log.Printf("debug: dev.addPod() Pod %s in ns %s with the GPU ID %d will be added to device map",
