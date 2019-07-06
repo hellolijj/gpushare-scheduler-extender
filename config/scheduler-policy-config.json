@@ -3,14 +3,15 @@
   "apiVersion": "v1",
   "extenders": [
     {
-      "urlPrefix": "http://127.0.0.1:32766/gpushare-scheduler",
+      "urlPrefix": "http://127.0.0.1:32743/gputopology-scheduler",
       "filterVerb": "filter",
+      "PrioritizeVerb" : "sort",
       "bindVerb":   "bind",
       "enableHttps": false,
       "nodeCacheCapable": true,
       "managedResources": [
         {
-          "name": "aliyun.com/gpu-count",
+          "name": "aliyun.com/gpu",
           "ignoredByScheduler": false
         }
       ],

@@ -17,9 +17,10 @@ import (
 
 const (
 	versionPath       = "/version"
-	apiPrefix         = "/gpushare-scheduler"
+	apiPrefix         = "/gputopology-scheduler"
 	bindPrefix        = apiPrefix + "/bind"
 	predicatesPrefix  = apiPrefix + "/filter"
+	sortPrefix        = apiPrefix + "sort"
 	inspectPrefix     = apiPrefix + "/inspect/:nodename"
 	inspectListPrefix = apiPrefix + "/inspect"
 )
@@ -97,6 +98,46 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 	}
 }
 
+func PrioritizeRoute(prioritize *scheduler.Prioritize) httprouter.Handle {
+	
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		checkBody(w, r)
+		
+		var buf bytes.Buffer
+		body := io.TeeReader(r.Body, &buf)
+		
+		log.Print("info: ", prioritize.Name, " ExtenderArgs = ", buf.String())
+		
+		var extenderArgs schedulerapi.ExtenderArgs
+		var hostPriorityList *schedulerapi.HostPriorityList
+		
+		if err := json.NewDecoder(body).Decode(&extenderArgs); err != nil {
+			log.Printf("warn: failed to parse request due to error %v", err)
+			hostPriorityList = nil
+		} else {
+			log.Printf("debug: gputopologysort ExtenderArgs = %v", extenderArgs)
+			if list, err := prioritize.Handler(extenderArgs); err != nil {
+				log.Printf("warn: failed to parse request due to error %v", err)
+			} else {
+				hostPriorityList = list
+			}
+		}
+		
+		if resultBody, err := json.Marshal(hostPriorityList); err != nil {
+			log.Printf("warn: Failed due to %v", err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			errMsg := fmt.Sprintf("{'error':'%s'}", err.Error())
+			w.Write([]byte(errMsg))
+		} else {
+			log.Print("info: ", prioritize.Name, " hostPriorityList = ", string(resultBody))
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(resultBody)
+		}
+	}
+}
+
 func BindRoute(bind *scheduler.Bind) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		checkBody(w, r)
@@ -165,6 +206,10 @@ func DebugLogging(h httprouter.Handle, path string) httprouter.Handle {
 func AddPredicate(router *httprouter.Router, predicate *scheduler.Predicate) {
 	// path := predicatesPrefix + "/" + predicate.Name
 	router.POST(predicatesPrefix, DebugLogging(PredicateRoute(predicate), predicatesPrefix))
+}
+
+func AddPrioritize(router *httprouter.Router, prioritize *scheduler.Prioritize) {
+	router.POST(sortPrefix, DebugLogging(PrioritizeRoute(prioritize), sortPrefix))
 }
 
 func AddBind(router *httprouter.Router, bind *scheduler.Bind) {
