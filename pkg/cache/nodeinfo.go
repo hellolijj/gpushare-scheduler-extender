@@ -242,16 +242,14 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	reqGPU := 0
 	found = false
 	availableGPUs := n.getAvailableGPUs()
-
 	reqGPU = utils.GetGPUCountFromPodResource(pod)
+	log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
+	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 
 	if reqGPU > 0 {
-		log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
-		log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			candidateDevID, found = n.prim(pod, reqGPU)
 		}
-
 		if found {
 			log.Printf("debug: Find candidate dev id %d for pod %s in ns %s successfully.",
 				candidateDevID,
