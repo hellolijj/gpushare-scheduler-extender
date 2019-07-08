@@ -223,7 +223,6 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 			pod.Namespace,
 			devIds)
 		for _, devId := range devIds {
-			// TODO: here maybe devid is not devs[id]
 			dev, found := n.devs[int(devId)]
 			if !found {
 				log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, devId, n.name)

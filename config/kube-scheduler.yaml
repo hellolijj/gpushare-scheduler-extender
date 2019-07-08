@@ -36,7 +36,7 @@ spec:
     - mountPath: /etc/kubernetes/scheduler.conf
       name: kubeconfig
       readOnly: true
-    - mountPath: /etc/kubernetes/scheduler-policy-config.json
+    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
       name: scheduler-policy-config
       readOnly: true
     - mountPath: /etc/localtime

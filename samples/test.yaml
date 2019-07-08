@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: binpack
+  labels:
+    app: binpack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: binpack
+  template:
+    metadata:
+      labels:
+        app: binpack
+    spec:
+      containers:
+      - name: binpack
+        image: cheyang/gpu-player:v2
+        resources:
+          limits:
+            # GiB
+            aliyun.com/gpu: 1

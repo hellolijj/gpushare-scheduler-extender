@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/api/core/v1"
 	"strings"
+
+	"k8s.io/api/core/v1"
 )
 
 // AssignedNonTerminatedPod selects pods that are assigned and non-terminal (scheduled and running).
@@ -91,14 +92,10 @@ loop:
 // GetGPUCountFromPodAnnotation gets the GPU Count of the pod, choose the larger one between gpu memory and gpu init container memory
 func GetGPUCountFromPodAnnotation(pod *v1.Pod) (gpuCount int) {
 	if len(pod.ObjectMeta.Annotations) > 0 {
-		value, found := pod.ObjectMeta.Annotations[EnvResourceByPod]
-		if found {
-			s, _ := strconv.Atoi(value)
-			if s < 0 {
-				s = 0
-			}
+		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
+		if found && len(value) != 0 {
+			gpuCount += len(strings.Split(value, ","))
 
-			gpuCount += s
 		}
 	}
 
