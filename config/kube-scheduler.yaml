@@ -15,8 +15,9 @@ spec:
     - kube-scheduler
     - --address=127.0.0.1
     - --kubeconfig=/etc/kubernetes/scheduler.conf
-    - --policy-config-file=/etc/kubernetes/scheduler-policy-config.json
     - --leader-elect=true
+    - --policy-config-file=/etc/kubernetes/gsoc-scheduler-policy-config.json
+    - -v=4
     image: registry.cn-hangzhou.aliyuncs.com/acs/kube-scheduler-amd64:v1.11.2
     imagePullPolicy: IfNotPresent
     livenessProbe:
@@ -36,24 +37,25 @@ spec:
     - mountPath: /etc/kubernetes/scheduler.conf
       name: kubeconfig
       readOnly: true
-    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
-      name: scheduler-policy-config
-      readOnly: true
     - mountPath: /etc/localtime
       name: localtime
+      readOnly: true
+    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
+      name: scheduler-policy-config
       readOnly: true
   hostNetwork: true
   priorityClassName: system-cluster-critical
   volumes:
   - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - hostPath:
       path: /etc/kubernetes/scheduler.conf
       type: FileOrCreate
     name: kubeconfig
   - hostPath:
-      path: /etc/kubernetes/scheduler-policy-config.json
+      path: /etc/kubernetes/gsoc-scheduler-policy-config.json
       type: FileOrCreate
     name: scheduler-policy-config
-  - hostPath:
-      path: /etc/localtime
-      type: ""
-    name: localtime
+status: {}

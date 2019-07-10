@@ -1,23 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
-  name: binpack
+  name: test-gpu-topology
   labels:
-    app: binpack
+    app: test-gpu-topology
 spec:
   replicas: 1
-  selector:
+
+  selector: # define how the deployment finds the pods it mangages
     matchLabels:
-      app: binpack
-  template:
+      app: test-gpu-topology
+  template: # define the pods specifications
     metadata:
       labels:
-        app: binpack
+        app: test-gpu-topology
     spec:
+      hostIPC: true
       containers:
-      - name: binpack
-        image: cheyang/gpu-player:v2
+      - name: test-gpu-topology
+        image: junjunli/test-gpu-topology:demo
+#        imagePullPolicy: Never
         resources:
           limits:
-            # GiB
-            aliyun.com/gpu: 1
+             aliyun.com/gpu: 1
+        env:
+          - name: NVIDIA_VISIBLE_DEVICES
+            value: "0"
+          - name: CUDA_MPS_PIPE_DIRECTORY
+            value: "/tmp/nvidia-mps"
+          - name:  CUDA_MPS_LOG_DIRECTORY
+            value:  "/tmp/nvidia-log"
+          - name: CUDA_VISIBLE_DEVICES
+            value: "0"
+          - name: NVIDIA_DRIVER_CAPABILITIES
+            value: compute,utility
+          - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+            value: "30"
+        volumeMounts:
+          - name: nvidia-mps
+            mountPath: /tmp/nvidia-mps
+      volumes:
+         - name: nvidia-mps
+           hostPath:
+             path: /tmp/nvidia-mps

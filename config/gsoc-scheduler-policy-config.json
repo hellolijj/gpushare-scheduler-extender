@@ -1,11 +1,17 @@
 {
   "kind": "Policy",
   "apiVersion": "v1",
+  "priorities": [
+    {"name": "LeastRequestedPriority", "weight": 1},
+    {"name": "BalancedResourceAllocation", "weight": 1},
+    {"name": "ServiceSpreadingPriority", "weight": 1},
+    {"name": "EqualPriority", "weight": 1}
+  ],
   "extenders": [
     {
       "urlPrefix": "http://127.0.0.1:32743/gputopology-scheduler",
-      "filterVerb": "filter",
-      "PrioritizeVerb" : "sort",
+      "PrioritizeVerb": "sort",
+      "weight": 1,
       "bindVerb":   "bind",
       "enableHttps": false,
       "nodeCacheCapable": true,

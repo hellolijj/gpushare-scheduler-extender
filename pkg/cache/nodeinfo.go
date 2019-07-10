@@ -288,6 +288,7 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 	found = false
 	if req <= 0 || req < n.getAvailableGPUs() {
+		log.Printf("warn: rqu gpu count is invalid %v", req)
 		return
 	}
 
@@ -305,6 +306,7 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 	ids, ok := n.getUnusedShortestTwoDevices()
 
 	if !ok {
+		log.Printf("warn: error in get two shortest gpupu")
 		return
 	}
 
@@ -340,6 +342,7 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 		if u == -1 { // 剩下的点和集合s不连通
 			n.devs[int(ids[0])].isUsed = false
 			n.devs[int(ids[0])].isUsed = false
+			log.Printf("warn: 剩下的节点不连通")
 			return
 		}
 		n.devs[u].isUsed = true
