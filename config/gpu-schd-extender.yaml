@@ -91,8 +91,8 @@ spec:
       serviceAccount: gpu-schd-extender
       containers:
         - name: gpu-schd-extender
-          image: junjunli/gpu-scheduler-extender:demo1
-#          imagePullPolicy: Never
+          image: junjunli/gpu-scheduler-extender:demo2
+          imagePullPolicy: IfNotPresent
           env:
           - name: LOG_LEVEL
             value: debug
