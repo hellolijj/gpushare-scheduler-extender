@@ -20,7 +20,7 @@ spec:
       containers:
       - name: test-gpu-topology
         image: registry.cn-hangzhou.aliyuncs.com/lijj/test-gpu-topology:demo1
-#        imagePullPolicy: Never
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
              aliyun.com/gpu: 1

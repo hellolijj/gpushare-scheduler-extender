@@ -331,7 +331,7 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 	n.devs[int(ids[0])].isUsed = true
 
 	// 循环 req - 2此
-	for c := 2; c <= req; c++ {
+	for c := 2; c < req; c++ {
 		u := -1 // u使得d[u]最小
 		min := 100
 		for i := 0; i < len(n.devs); i++ {
