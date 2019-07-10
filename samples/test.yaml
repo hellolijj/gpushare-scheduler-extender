@@ -19,7 +19,7 @@ spec:
       hostIPC: true
       containers:
       - name: test-gpu-topology
-        image: junjunli/test-gpu-topology:demo1
+        image: registry.cn-hangzhou.aliyuncs.com/lijj/test-gpu-topology:demo1
 #        imagePullPolicy: Never
         resources:
           limits:
