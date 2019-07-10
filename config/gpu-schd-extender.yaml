@@ -3,7 +3,7 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
 rules:
 - apiGroups:
   - ""
@@ -41,21 +41,21 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
   namespace: kube-system
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
 subjects:
 - kind: ServiceAccount
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
   namespace: kube-system
 
 # deployment yaml
@@ -63,7 +63,7 @@ subjects:
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
   namespace: kube-system
 spec:
   replicas: 3
@@ -73,7 +73,7 @@ spec:
     metadata:
       labels:
         app: gpushare
-        component: gpushare-schd-extender
+        component: gpu-schd-extender
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -88,9 +88,9 @@ spec:
       nodeSelector:
          node-role.kubernetes.io/master: ""
 #         gsoc: "lijj"
-      serviceAccount: gpushare-schd-extender
+      serviceAccount: gpu-schd-extender
       containers:
-        - name: gpushare-schd-extender
+        - name: gpu-schd-extender
           image: junjunli/gpu-scheduler-extender:demo1
 #          imagePullPolicy: Never
           env:
@@ -104,11 +104,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gpushare-schd-extender
+  name: gpu-schd-extender
   namespace: kube-system
   labels:
     app: gpushare
-    component: gpushare-schd-extender
+    component: gpu-schd-extender
 spec:
   type: NodePort
   ports:
@@ -119,4 +119,4 @@ spec:
   selector:
     # select app=ingress-nginx pods
     app: gpushare
-    component: gpushare-schd-extender
+    component: gpu-schd-extender

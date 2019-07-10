@@ -287,8 +287,8 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 // 根据 gpu topology 返回 device list
 func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 	found = false
-	if req <= 0 || req < n.getAvailableGPUs() {
-		log.Printf("warn: rqu gpu count is invalid %v", req)
+	if req <= 0 || req > n.getAvailableGPUs() {
+		log.Printf("debug: rqu gpu count is invalid %v", req)
 		return
 	}
 
@@ -302,6 +302,8 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 			}
 		}
 	}
+	
+	log.Printf("debug: info: req gpu more than 2")
 
 	ids, ok := n.getUnusedShortestTwoDevices()
 
