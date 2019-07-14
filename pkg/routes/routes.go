@@ -8,21 +8,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
-
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/scheduler"
+	"github.com/julienschmidt/httprouter"
 
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
 const (
-	versionPath       = "/version"
-	apiPrefix         = "/gputopology-scheduler"
-	bindPrefix        = apiPrefix + "/bind"
-	predicatesPrefix  = apiPrefix + "/filter"
-	sortPrefix        = apiPrefix + "sort"
-	inspectPrefix     = apiPrefix + "/inspect/:nodename"
-	inspectListPrefix = apiPrefix + "/inspect"
+	versionPath = "/version"
+	apiPrefix   = "/gputopology-scheduler"
+	bindPrefix  = apiPrefix + "/bind"
+	sortPrefix  = apiPrefix + "sort"
 )
 
 var (
@@ -37,80 +33,19 @@ func checkBody(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func InspectRoute(inspect *scheduler.Inspect) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		result := inspect.Handler(ps.ByName("nodename"))
-
-		if resultBody, err := json.Marshal(result); err != nil {
-			// panic(err)
-			log.Printf("warn: Failed due to %v", err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			errMsg := fmt.Sprintf("{'error':'%s'}", err.Error())
-			w.Write([]byte(errMsg))
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(resultBody)
-		}
-	}
-}
-
-func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		checkBody(w, r)
-
-		// mu.RLock()
-		// defer mu.RUnlock()
-
-		var buf bytes.Buffer
-		body := io.TeeReader(r.Body, &buf)
-
-		var extenderArgs schedulerapi.ExtenderArgs
-		var extenderFilterResult *schedulerapi.ExtenderFilterResult
-
-		if err := json.NewDecoder(body).Decode(&extenderArgs); err != nil {
-
-			log.Printf("warn: failed to parse request due to error %v", err)
-			extenderFilterResult = &schedulerapi.ExtenderFilterResult{
-				Nodes:       nil,
-				FailedNodes: nil,
-				Error:       err.Error(),
-			}
-		} else {
-			log.Printf("debug: gputopologyfilter ExtenderArgs = %v", extenderArgs)
-			extenderFilterResult = predicate.Handler(extenderArgs)
-		}
-
-		if resultBody, err := json.Marshal(extenderFilterResult); err != nil {
-			// panic(err)
-			log.Printf("warn: Failed due to %v", err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			errMsg := fmt.Sprintf("{'error':'%s'}", err.Error())
-			w.Write([]byte(errMsg))
-		} else {
-			log.Print("info: ", predicate.Name, " extenderFilterResult = ", string(resultBody))
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(resultBody)
-		}
-	}
-}
-
 func PrioritizeRoute(prioritize *scheduler.Prioritize) httprouter.Handle {
-	
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		checkBody(w, r)
-		
+
 		var buf bytes.Buffer
 		body := io.TeeReader(r.Body, &buf)
-		
+
 		log.Print("info: ", prioritize.Name, " ExtenderArgs = ", buf.String())
-		
+
 		var extenderArgs schedulerapi.ExtenderArgs
 		var hostPriorityList *schedulerapi.HostPriorityList
-		
+
 		if err := json.NewDecoder(body).Decode(&extenderArgs); err != nil {
 			log.Printf("warn: failed to parse request due to error %v", err)
 			hostPriorityList = nil
@@ -122,7 +57,7 @@ func PrioritizeRoute(prioritize *scheduler.Prioritize) httprouter.Handle {
 				hostPriorityList = list
 			}
 		}
-		
+
 		if resultBody, err := json.Marshal(hostPriorityList); err != nil {
 			log.Printf("warn: Failed due to %v", err)
 			w.Header().Set("Content-Type", "application/json")
@@ -188,6 +123,7 @@ func BindRoute(bind *scheduler.Bind) httprouter.Handle {
 }
 
 func VersionRoute(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Println(w, "gputopology-scheduler")
 	fmt.Fprint(w, fmt.Sprint(version))
 }
 
@@ -203,11 +139,6 @@ func DebugLogging(h httprouter.Handle, path string) httprouter.Handle {
 	}
 }
 
-func AddPredicate(router *httprouter.Router, predicate *scheduler.Predicate) {
-	// path := predicatesPrefix + "/" + predicate.Name
-	router.POST(predicatesPrefix, DebugLogging(PredicateRoute(predicate), predicatesPrefix))
-}
-
 func AddPrioritize(router *httprouter.Router, prioritize *scheduler.Prioritize) {
 	router.POST(sortPrefix, DebugLogging(PrioritizeRoute(prioritize), sortPrefix))
 }
@@ -218,9 +149,4 @@ func AddBind(router *httprouter.Router, bind *scheduler.Bind) {
 	} else {
 		router.POST(bindPrefix, DebugLogging(BindRoute(bind), bindPrefix))
 	}
-}
-
-func AddInspect(router *httprouter.Router, inspect *scheduler.Inspect) {
-	router.GET(inspectPrefix, DebugLogging(InspectRoute(inspect), inspectPrefix))
-	router.GET(inspectListPrefix, DebugLogging(InspectRoute(inspect), inspectListPrefix))
 }
