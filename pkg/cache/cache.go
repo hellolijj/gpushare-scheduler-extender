@@ -87,7 +87,7 @@ func (cache *SchedulerCache) KnownPod(podUID types.UID) bool {
 }
 
 func (cache *SchedulerCache) AddOrUpdatePod(pod *v1.Pod) error {
-	log.Printf("debug: Add or update pod info: %v", pod)
+	log.Printf("debug: Add or update pod info: %v", pod.Name)
 	log.Printf("debug: Node %v", cache.nodes)
 	if len(pod.Spec.NodeName) == 0 {
 		log.Printf("debug: pod %s in ns %s is not assigned to any node, skip", pod.Name, pod.Namespace)
@@ -114,10 +114,10 @@ func (cache *SchedulerCache) AddOrUpdatePod(pod *v1.Pod) error {
 
 // The lock is in cacheNode
 func (cache *SchedulerCache) RemovePod(pod *v1.Pod) {
-	log.Printf("debug: Remove pod info: %v", pod)
 	log.Printf("debug: Node %v", cache.nodes)
 	n, err := cache.GetNodeInfo(pod.Spec.NodeName)
 	if err == nil {
+		log.Printf("debug: Remove pod info: %v", pod.Name)
 		n.removePod(pod)
 	} else {
 		log.Printf("debug: Failed to get node %s due to %v", pod.Spec.NodeName, err)

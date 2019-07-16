@@ -121,6 +121,7 @@ func (n *NodeInfo) removePod(pod *v1.Pod) {
 	defer n.rwmu.Unlock()
 
 	ids := utils.GetGPUIDFromAnnotation(pod)
+	log.Printf("warn: Pod remove ids %v", ids)
 	for _, id := range ids {
 		if id >= 0 {
 			dev, found := n.devs[id]
@@ -253,17 +254,31 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 
 // allocate the GPU ID to the pod
 func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool) {
-
 	reqGPU := 0
 	found = false
 	availableGPUs := n.getAvailableGPUs()
 	reqGPU = utils.GetGPUCountFromPodResource(pod)
 	log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
+	
+	topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
+	if err != nil {
+		log.Printf("warn: Failed to get scheduler object %v", topologyScheduler)
+		return
+	}
 
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
-			candidateDevID, found = n.prim(pod, reqGPU)
+			
+			ids, err := topologyScheduler.policy.Allocate(n, reqGPU)
+			if err != nil {
+				log.Printf("allocate gpu to node failed, resaon: %v", err)
+				return
+			}
+			for _, id := range ids {
+				candidateDevID = append(candidateDevID, uint(id))
+			}
+			found = true
 		}
 		if found {
 			log.Printf("debug: Find candidate dev id %d for pod %s in ns %s successfully.",
@@ -299,82 +314,3 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 	log.Printf("debug: getAllGPUs: %v in node %s, and dev %v", allGPUs, n.name, n.devs)
 	return allGPUs
 }
-
-// 根据 gpu topology 返回 device list
-func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
-	found = false
-	if req <= 0 || req > n.getAvailableGPUs() {
-		log.Printf("debug: rqu gpu count is invalid %v", req)
-		return
-	}
-
-	// req == 1, 随机返回device id
-	if req == 1 {
-		for _, dev := range n.devs {
-			if dev.isUsed == false {
-				ids = append(ids, uint(dev.idx))
-				found = true
-				return
-			}
-		}
-	}
-
-	log.Printf("debug: info: req gpu more than 2")
-
-	ids, ok := []uint{1,2}, true
-
-	if !ok {
-		log.Printf("warn: error in get two shortest gpupu")
-		return
-	}
-
-	if req == 2 {
-		found = true
-		return
-	}
-
-	// 寻找接下来的点
-
-	// 顶点到集合ids的最短距离
-	d := []int{}
-	for i := 0; i < len(n.devs); i++ {
-		d = append(d, 100)
-	}
-
-	d[ids[0]] = 0
-	n.devs[int(ids[0])].isUsed = true
-	d[ids[1]] = 0
-	n.devs[int(ids[0])].isUsed = true
-
-	// 循环 req - 2此
-	for c := 2; c <= req; c++ {
-		u := -1 // u使得d[u]最小
-		min := 100
-		for i := 0; i < len(n.devs); i++ {
-			if n.devs[i].isUsed == false && d[i] < min {
-				u = i
-				min = d[i]
-			}
-
-		}
-		if u == -1 { // 剩下的点和集合s不连通
-			n.devs[int(ids[0])].isUsed = false
-			n.devs[int(ids[0])].isUsed = false
-			log.Printf("warn: 剩下的节点不连通")
-			return
-		}
-		n.devs[u].isUsed = true
-		ids = append(ids, uint(u))
-
-		// 更新接下来的点到集合到最短距离
-		for v := 0; v < len(n.devs); v++ {
-			if n.devs[v].isUsed == false && int(n.gpuTopology[uint(u)][uint(v)]) < d[v] {
-				d[v] = int(n.gpuTopology[uint(u)][uint(v)])
-			}
-		}
-	}
-
-	found = true
-	return
-}
-

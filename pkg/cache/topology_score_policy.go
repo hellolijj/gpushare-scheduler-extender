@@ -15,21 +15,44 @@ func NewTopologyPolicy() Policy {
 }
 
 // Allocate GPUs following a simple policy.
-func (p *topologyPolicy) Score(n *NodeInfo, ques int) int {
+func (p *topologyPolicy) Score(n *NodeInfo, req int) (int, error) {
 	availableGPUs := n.getAvailableGPUs()
 
-	if ques <= 0 || ques > availableGPUs {
-		return 0
+	if req <= 0 || req > availableGPUs {
+		err := fmt.Errorf("rqu gpu %v is invalid", req)
+		return 0, err
 	}
-	return 0
-
+	
+	// TODO: 对不通情况的分数进行归一化处理
+	// req == 1, score 表示 该卡到另外所有可用卡的带宽只和。越小越好
+	// req == 2, score 表示 节点中 带宽最高的那两张卡之间的带宽。越大越好
+	// req == 3, score 表示 节点中 3个卡两两相连接的3条相互连接的带宽和。越大越好
+	// req == 4, score 表示 节点中 4个卡两两相连接的6条相互连接的带宽和。越大越好
+	// ...
+	if req == 1 {
+		_, score, err := p.PreAllocate(n, req)
+		if err != nil {
+			return 0, err
+		}
+		
+		return 1000 - score, nil
+	}
+	
+	_, score, err := p.PreAllocate(n, req)
+	return score, err
 }
+
+func (p *topologyPolicy) Allocate(n *NodeInfo, req int) ([]int, error) {
+	ids, _, err := p.PreAllocate(n, req)
+	return ids, err
+}
+
 
 // PreAllocate 计算分配方案，及该方案的打分
 func (p *topologyPolicy) PreAllocate(n *NodeInfo, req int) (ids []int, score int, err error) {
 	availableGPUs := n.getAvailableGPUs()
 	if req <= 0 || req > availableGPUs {
-		err = fmt.Errorf("rqu gpu count %v is invalidl", req)
+		err = fmt.Errorf("rqu gpu count %v is invalid", req)
 		return nil, 0, err
 	}
 
@@ -39,21 +62,47 @@ func (p *topologyPolicy) PreAllocate(n *NodeInfo, req int) (ids []int, score int
 			return nil, 0, err
 		}
 		ids = append(ids, minScoreId)
-		// TODO: score 越小越好
-		score = 1000 - score
-		return nil, 0, err
+		return ids, score, err
 	}
 	
 	log.Printf("request gpus counts %v is more than 1, ", req)
 	ids, score, err = getMaxScoreLink(n)
 	if req == 2 {
-		return
+		return ids, score, err
 	}
 	
 	// 接下来是图中寻找最小生成树问题，参见 prim 算法
 	
-	return
+	// 标记 最大带宽已经使用
+	n.devs[int(ids[0])].isUsed = true
+	n.devs[int(ids[1])].isUsed = true
 	
+	// 计算接下来的卡到 集合ids 的带宽和，将最大到带宽和卡加入到 ids
+	// 循环 req - 2此
+	for c := 2; c < req; c++ {
+		// 寻找到集合 d 最大的卡
+		u := -1 // 记录当前遍历的卡
+		max := -1  // 记录当前遍历的卡到集合的带宽
+		
+		for i := 0; i < len(n.devs); i++ {
+			if n.devs[i].isUsed == false && calculateFromGPUAndSelectedSets(n, i, ids) > max {
+				u = i
+				max = calculateFromGPUAndSelectedSets(n, i, ids)
+			}
+		}
+		
+		if u == -1 { // 说明以上到遍历没有找到卡
+			err = fmt.Errorf("rqu gpu count %v is invalidl", req)
+			return ids, 0, err
+		}
+		
+		// 将最高 离ids带宽和 的卡加入ids
+		n.devs[u].isUsed = true
+		ids = append(ids, u)
+		score += max
+	}
+	
+	return ids, score, nil
 }
 
 
@@ -159,4 +208,26 @@ func getMaxScoreLink(n *NodeInfo) (ids []int, score int, err error) {
 	}
 	
 	return []int{maxDevIdx1, maxDevIdx2}, maxScore, nil
+}
+
+
+// 计算一个候选 gpu 到已经确定的gpu集合的带宽和。
+func calculateFromGPUAndSelectedSets(n *NodeInfo, candidate int, selectedSets []int) int{
+	if len(selectedSets) == 0 {
+		return 0
+	}
+	
+	if candidate < 0 || candidate > len(n.devs) {
+		return 0
+	}
+	
+	score := 0
+	for _, selectedSet := range selectedSets {
+		if selectedSet == candidate {
+			return 0
+		}
+		score += calculateGPUPairScore(n, candidate, selectedSet)
+	}
+	
+	return score
 }

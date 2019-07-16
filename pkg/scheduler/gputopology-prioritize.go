@@ -27,17 +27,23 @@ func NewGPUTopologyPrioritize(clientset *kubernetes.Clientset, c *cache.Schedule
 					log.Printf("warn: Failed to handle node %s in ns %s due to error %v", node.Name, node.Namespace, err)
 					return &priorityList, err
 				}
-
-				simpleScorer, err := cache.NewScorer(nodeInfo, cache.NewSimplePolicy())
+				
+				topologyScheduler, err := cache.NewScheduler(nodeInfo, cache.NewTopologyPolicy())
 				if err != nil {
-					log.Printf("warn: Failed to get score object %v", simpleScorer)
+					log.Printf("warn: Failed to get scheduler object %v", topologyScheduler)
 					return &priorityList, err
 				}
 
 				// here to sort in node
+				score, err := topologyScheduler.Score(reqGPU)
+				if err != nil {
+					log.Printf("warn: Failed to score in node %s in ns %s due to error %v", node.Name, node.Namespace, err)
+					return &priorityList, err
+				}
+				
 				priorityList[i] = schedulerapi.HostPriority{
 					Host:  node.Name,
-					Score: simpleScorer.Score(reqGPU),
+					Score: score,
 				}
 			}
 			return &priorityList, nil

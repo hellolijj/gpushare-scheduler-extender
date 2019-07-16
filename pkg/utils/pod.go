@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"strings"
@@ -49,44 +48,13 @@ func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
 	if len(pod.ObjectMeta.Annotations) > 0 {
 		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
 		if found {
-			idList := strings.Split(value, ",")
+			idList := strings.Split(value, "_")
 			for id := range idList {
 				ids = append(ids, int(id))
 			}
 		}
 	}
 	return ids
-}
-
-// GetGPUIDFromEnv gets GPU ID from Env
-func GetGPUIDFromEnv(pod *v1.Pod) int {
-	id := -1
-	for _, container := range pod.Spec.Containers {
-		id = getGPUIDFromContainer(container)
-		if id >= 0 {
-			return id
-		}
-	}
-
-	return id
-}
-
-func getGPUIDFromContainer(container v1.Container) (devIdx int) {
-	devIdx = -1
-	var err error
-loop:
-	for _, env := range container.Env {
-		if env.Name == EnvResourceIndex {
-			devIdx, err = strconv.Atoi(env.Value)
-			if err != nil {
-				log.Printf("warn: Failed due to %v for %s", err, container.Name)
-				devIdx = -1
-			}
-			break loop
-		}
-	}
-
-	return devIdx
 }
 
 // GetGPUCountFromPodAnnotation gets the GPU Count of the pod, choose the larger one between gpu memory and gpu init container memory
