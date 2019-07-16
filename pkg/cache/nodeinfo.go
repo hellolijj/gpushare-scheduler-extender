@@ -3,13 +3,14 @@ package cache
 import (
 	"fmt"
 	"log"
-	"sort"
+	"strings"
 	"sync"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 )
 
 const (
@@ -23,10 +24,11 @@ type NodeInfo struct {
 	devs        map[int]*DeviceInfo
 	gpuUsed     int
 	gpuCount    int
-	gpuTopology map[uint]map[uint]uint
-	gpuEdges    Edges
+	gpuTopology [][]TopologyType
 	rwmu        *sync.RWMutex
 }
+
+type TopologyType nvml.P2PLinkType
 
 // Create Node Level
 func NewNodeInfo(node *v1.Node) *NodeInfo {
@@ -37,20 +39,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		devMap[i] = newDeviceInfo(i) // 这里的i 表示什么？device id 吗？
 	}
 
-	gpuTopology := utils.GetGPUTopologyInNode(node)
-
-	gpuEdges := Edges{}
-	totalGpu := len(devMap)
-
-	if totalGpu >= 2 {
-		for i := 0; i < totalGpu; i++ {
-			for j := i + 1; j < totalGpu; j++ {
-				gpuEdges = append(gpuEdges, &Edge{uint(i), uint(j), gpuTopology[uint(i)][uint(j)]})
-			}
-		}
-	}
-
-	sort.Sort(gpuEdges)
+	gpuTopology := getGPUTopologyFromNode(node, devMap)
 
 	nodeInfo := &NodeInfo{
 		name:        node.Name,
@@ -58,12 +47,39 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		devs:        devMap,
 		gpuCount:    utils.GetGPUCountInNode(node),
 		gpuTopology: gpuTopology,
-		gpuEdges:    gpuEdges,
-		rwmu:        new(sync.RWMutex),
+
+		rwmu: new(sync.RWMutex),
 	}
 
 	log.Printf("debug: node %s has nodeinfo %v", node.Name, nodeInfo)
 	return nodeInfo
+}
+
+// 从node annotaion 里获取gpu topology
+func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]TopologyType {
+	// init gpuTopology
+	topology := make([][]TopologyType, len(devs))
+
+	if !utils.IsGPUTopologyNode(node) {
+		return topology
+	}
+
+	for i := 0; i < len(devs); i++ {
+		topology[i] = make([]TopologyType, len(devs))
+	}
+
+	for k, v := range node.Annotations {
+		// GPU_SYS_0_1: Cross CPU socket
+		if strings.HasPrefix(k, utils.GPU_PRIFX) {
+			var gpu1, gpu2 int
+			var topoAbbr, topoDesc string
+			fmt.Sscanf(k, utils.GPU_PRIFX+"%s_%d_%d", &topoAbbr, &gpu1, &gpu2)
+			fmt.Sscanf(v, "%s", &topoDesc)
+			topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoDesc, topoAbbr))
+		}
+	}
+
+	return topology
 }
 
 func (n *NodeInfo) GetName() string {
@@ -86,7 +102,7 @@ func (n *NodeInfo) GetGPUCount() int {
 	return n.gpuCount
 }
 
-func (n *NodeInfo) GetGPUTopology() map[uint]map[uint]uint {
+func (n *NodeInfo) GetGPUTopology() [][]TopologyType {
 	return n.gpuTopology
 }
 
@@ -244,7 +260,7 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	reqGPU = utils.GetGPUCountFromPodResource(pod)
 	log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
-	
+
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			candidateDevID, found = n.prim(pod, reqGPU)
@@ -302,10 +318,10 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 			}
 		}
 	}
-	
+
 	log.Printf("debug: info: req gpu more than 2")
 
-	ids, ok := n.getUnusedShortestTwoDevices()
+	ids, ok := []uint{1,2}, true
 
 	if !ok {
 		log.Printf("warn: error in get two shortest gpupu")
@@ -357,20 +373,8 @@ func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
 			}
 		}
 	}
-	
+
 	found = true
 	return
 }
 
-// get Unused Shortest TwoDevices
-func (n *NodeInfo) getUnusedShortestTwoDevices() (ids []uint, isShortestDistance bool) {
-	isShortestDistance = false
-	for i := 0; i < len(n.gpuEdges); i++ {
-		if n.devs[int(n.gpuEdges[i].gpu1)].isUsed == false && n.devs[int(n.gpuEdges[i].gpu2)].isUsed == false {
-			ids = []uint{n.gpuEdges[i].gpu1, n.gpuEdges[i].gpu2}
-			isShortestDistance = true
-			break
-		}
-	}
-	return
-}

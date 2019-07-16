@@ -12,7 +12,7 @@ type Policy interface {
 	Score(node *NodeInfo, quest int) int
 }
 
-// Allocate GPUs following a simple policy.
+// 所有节点的打分都是一样的
 func (p *simplePolicy) Score(node *NodeInfo, ques int) int {
 	if ques <= 0 {
 		return 0
