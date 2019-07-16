@@ -1,9 +1,6 @@
 package utils
 
 import (
-	"fmt"
-	"strings"
-
 	"k8s.io/api/core/v1"
 )
 
@@ -23,21 +20,4 @@ func GetGPUCountInNode(node *v1.Node) int {
 	return int(val.Value())
 }
 
-// key 表示 设备的id /dev/nvidia%d
-func GetGPUTopologyInNode(node *v1.Node) map[uint]map[uint]uint {
-	topology := make(map[uint]map[uint]uint)
-	if !IsGPUTopologyNode(node) {
-		return topology
-	}
 
-	for k, v := range node.Annotations {
-		if strings.HasPrefix(k, "GSOC_DEV_") {
-			var gpu1, gpu2, topo uint
-			fmt.Sscanf(k, "GSOC_DEV_%d_%d", &gpu1, &gpu2)
-			fmt.Sscanf(v, "%d", &topo)
-			topology[gpu1] = map[uint]uint{gpu2: topo}
-		}
-	}
-
-	return topology
-}

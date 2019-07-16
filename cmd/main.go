@@ -87,21 +87,15 @@ func main() {
 
 	go controller.Run(threadness, stopCh)
 
-	// 预选过程可以不用，因为对gpu个数的判断，默认调度器已经做了这件事情
-	gpuTopologyPredicate := scheduler.NewGPUTopologyPredicate(clientset, controller.GetSchedulerCache())
 	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache())
 	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache())
-	// TODO: to delete inspect
-	gpuTopologyInspect := scheduler.NewGPUShareInspect(controller.GetSchedulerCache())
 
 	router := httprouter.New()
 
 	routes.AddPProf(router)
 	routes.AddVersion(router)
-	routes.AddPredicate(router, gpuTopologyPredicate)
 	routes.AddPrioritize(router, gpuTopologyPrioritize)
 	routes.AddBind(router, gpuTopologyBind)
-	routes.AddInspect(router, gpuTopologyInspect)
 
 	log.Printf("info: server starting on the port :%s", port)
 	if err := http.ListenAndServe(":"+port, router); err != nil {

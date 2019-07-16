@@ -7,6 +7,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
@@ -17,12 +18,32 @@ func NewGPUTopologyPrioritize(clientset *kubernetes.Clientset, c *cache.Schedule
 			log.Printf("debug:  gpu topology prioritize in nodes: %v", nodes)
 			var priorityList schedulerapi.HostPriorityList
 			priorityList = make([]schedulerapi.HostPriority, len(nodes))
+			reqGPU := utils.GetGPUCountFromPodResource(&pod)
+
 			for i, node := range nodes {
+
+				nodeInfo, err := c.GetNodeInfo(node.Name)
+				if err != nil {
+					log.Printf("warn: Failed to handle node %s in ns %s due to error %v", node.Name, node.Namespace, err)
+					return &priorityList, err
+				}
 				
+				topologyScheduler, err := cache.NewScheduler(nodeInfo, cache.NewTopologyPolicy())
+				if err != nil {
+					log.Printf("warn: Failed to get scheduler object %v", topologyScheduler)
+					return &priorityList, err
+				}
+
 				// here to sort in node
+				score, err := topologyScheduler.Score(reqGPU)
+				if err != nil {
+					log.Printf("warn: Failed to score in node %s in ns %s due to error %v", node.Name, node.Namespace, err)
+					return &priorityList, err
+				}
+				
 				priorityList[i] = schedulerapi.HostPriority{
 					Host:  node.Name,
-					Score: 10,
+					Score: score,
 				}
 			}
 			return &priorityList, nil

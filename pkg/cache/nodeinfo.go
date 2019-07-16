@@ -3,13 +3,14 @@ package cache
 import (
 	"fmt"
 	"log"
-	"sort"
+	"strings"
 	"sync"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 )
 
 const (
@@ -23,10 +24,11 @@ type NodeInfo struct {
 	devs        map[int]*DeviceInfo
 	gpuUsed     int
 	gpuCount    int
-	gpuTopology map[uint]map[uint]uint
-	gpuEdges    Edges
+	gpuTopology [][]TopologyType
 	rwmu        *sync.RWMutex
 }
+
+type TopologyType nvml.P2PLinkType
 
 // Create Node Level
 func NewNodeInfo(node *v1.Node) *NodeInfo {
@@ -37,20 +39,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		devMap[i] = newDeviceInfo(i) // 这里的i 表示什么？device id 吗？
 	}
 
-	gpuTopology := utils.GetGPUTopologyInNode(node)
-
-	gpuEdges := Edges{}
-	totalGpu := len(devMap)
-
-	if totalGpu >= 2 {
-		for i := 0; i < totalGpu; i++ {
-			for j := i + 1; j < totalGpu; j++ {
-				gpuEdges = append(gpuEdges, &Edge{uint(i), uint(j), gpuTopology[uint(i)][uint(j)]})
-			}
-		}
-	}
-
-	sort.Sort(gpuEdges)
+	gpuTopology := getGPUTopologyFromNode(node, devMap)
 
 	nodeInfo := &NodeInfo{
 		name:        node.Name,
@@ -58,12 +47,39 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		devs:        devMap,
 		gpuCount:    utils.GetGPUCountInNode(node),
 		gpuTopology: gpuTopology,
-		gpuEdges:    gpuEdges,
-		rwmu:        new(sync.RWMutex),
+
+		rwmu: new(sync.RWMutex),
 	}
 
 	log.Printf("debug: node %s has nodeinfo %v", node.Name, nodeInfo)
 	return nodeInfo
+}
+
+// 从node annotaion 里获取gpu topology
+func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]TopologyType {
+	// init gpuTopology
+	topology := make([][]TopologyType, len(devs))
+
+	if !utils.IsGPUTopologyNode(node) {
+		return topology
+	}
+
+	for i := 0; i < len(devs); i++ {
+		topology[i] = make([]TopologyType, len(devs))
+	}
+
+	for k, v := range node.Annotations {
+		// GPU_SYS_0_1: Cross CPU socket
+		if strings.HasPrefix(k, utils.GPU_PRIFX) {
+			var gpu1, gpu2 int
+			var topoAbbr, topoDesc string
+			fmt.Sscanf(k, utils.GPU_PRIFX+"%s_%d_%d", &topoAbbr, &gpu1, &gpu2)
+			fmt.Sscanf(v, "%s", &topoDesc)
+			topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoDesc, topoAbbr))
+		}
+	}
+
+	return topology
 }
 
 func (n *NodeInfo) GetName() string {
@@ -86,7 +102,7 @@ func (n *NodeInfo) GetGPUCount() int {
 	return n.gpuCount
 }
 
-func (n *NodeInfo) GetGPUTopology() map[uint]map[uint]uint {
+func (n *NodeInfo) GetGPUTopology() [][]TopologyType {
 	return n.gpuTopology
 }
 
@@ -105,6 +121,7 @@ func (n *NodeInfo) removePod(pod *v1.Pod) {
 	defer n.rwmu.Unlock()
 
 	ids := utils.GetGPUIDFromAnnotation(pod)
+	log.Printf("warn: Pod remove ids %v", ids)
 	for _, id := range ids {
 		if id >= 0 {
 			dev, found := n.devs[id]
@@ -237,7 +254,6 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 
 // allocate the GPU ID to the pod
 func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool) {
-
 	reqGPU := 0
 	found = false
 	availableGPUs := n.getAvailableGPUs()
@@ -245,9 +261,24 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 	
+	topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
+	if err != nil {
+		log.Printf("warn: Failed to get scheduler object %v", topologyScheduler)
+		return
+	}
+
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
-			candidateDevID, found = n.prim(pod, reqGPU)
+			
+			ids, err := topologyScheduler.policy.Allocate(n, reqGPU)
+			if err != nil {
+				log.Printf("allocate gpu to node failed, resaon: %v", err)
+				return
+			}
+			for _, id := range ids {
+				candidateDevID = append(candidateDevID, uint(id))
+			}
+			found = true
 		}
 		if found {
 			log.Printf("debug: Find candidate dev id %d for pod %s in ns %s successfully.",
@@ -282,95 +313,4 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 	allGPUs = n.GetGPUCount()
 	log.Printf("debug: getAllGPUs: %v in node %s, and dev %v", allGPUs, n.name, n.devs)
 	return allGPUs
-}
-
-// 根据 gpu topology 返回 device list
-func (n *NodeInfo) prim(pod *v1.Pod, req int) (ids []uint, found bool) {
-	found = false
-	if req <= 0 || req > n.getAvailableGPUs() {
-		log.Printf("debug: rqu gpu count is invalid %v", req)
-		return
-	}
-
-	// req == 1, 随机返回device id
-	if req == 1 {
-		for _, dev := range n.devs {
-			if dev.isUsed == false {
-				ids = append(ids, uint(dev.idx))
-				found = true
-				return
-			}
-		}
-	}
-	
-	log.Printf("debug: info: req gpu more than 2")
-
-	ids, ok := n.getUnusedShortestTwoDevices()
-
-	if !ok {
-		log.Printf("warn: error in get two shortest gpupu")
-		return
-	}
-
-	if req == 2 {
-		found = true
-		return
-	}
-
-	// 寻找接下来的点
-
-	// 顶点到集合ids的最短距离
-	d := []int{}
-	for i := 0; i < len(n.devs); i++ {
-		d = append(d, 100)
-	}
-
-	d[ids[0]] = 0
-	n.devs[int(ids[0])].isUsed = true
-	d[ids[1]] = 0
-	n.devs[int(ids[0])].isUsed = true
-
-	// 循环 req - 2此
-	for c := 2; c < req; c++ {
-		u := -1 // u使得d[u]最小
-		min := 100
-		for i := 0; i < len(n.devs); i++ {
-			if n.devs[i].isUsed == false && d[i] < min {
-				u = i
-				min = d[i]
-			}
-
-		}
-		if u == -1 { // 剩下的点和集合s不连通
-			n.devs[int(ids[0])].isUsed = false
-			n.devs[int(ids[0])].isUsed = false
-			log.Printf("warn: 剩下的节点不连通")
-			return
-		}
-		n.devs[u].isUsed = true
-		ids = append(ids, uint(u))
-
-		// 更新接下来的点到集合到最短距离
-		for v := 0; v < len(n.devs); v++ {
-			if n.devs[v].isUsed == false && int(n.gpuTopology[uint(u)][uint(v)]) < d[v] {
-				d[v] = int(n.gpuTopology[uint(u)][uint(v)])
-			}
-		}
-	}
-	
-	found = true
-	return
-}
-
-// get Unused Shortest TwoDevices
-func (n *NodeInfo) getUnusedShortestTwoDevices() (ids []uint, isShortestDistance bool) {
-	isShortestDistance = false
-	for i := 0; i < len(n.gpuEdges); i++ {
-		if n.devs[int(n.gpuEdges[i].gpu1)].isUsed == false && n.devs[int(n.gpuEdges[i].gpu2)].isUsed == false {
-			ids = []uint{n.gpuEdges[i].gpu1, n.gpuEdges[i].gpu2}
-			isShortestDistance = true
-			break
-		}
-	}
-	return
 }

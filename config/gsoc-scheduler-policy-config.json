@@ -11,7 +11,7 @@
     {
       "urlPrefix": "http://127.0.0.1:32743/gputopology-scheduler",
       "PrioritizeVerb": "sort",
-      "weight": 1,
+      "weight": 4,
       "bindVerb":   "bind",
       "enableHttps": false,
       "nodeCacheCapable": true,
