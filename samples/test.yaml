@@ -1,46 +1,16 @@
-apiVersion: apps/v1
-kind: Deployment
-
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: test-gpu-topology
-  labels:
-    app: test-gpu-topology
 spec:
-  replicas: 1
-
-  selector: # define how the deployment finds the pods it mangages
-    matchLabels:
-      app: test-gpu-topology
-  template: # define the pods specifications
-    metadata:
-      labels:
-        app: test-gpu-topology
+  template:
     spec:
-      hostIPC: true
       containers:
       - name: test-gpu-topology
-        image: registry.cn-hangzhou.aliyuncs.com/lijj/test-gpu-topology:demo1
+        image: registry.cn-hangzhou.aliyuncs.com/konnase/horovod-benchmark:ubuntu1804-cuda10.0-cudnn7.6.0.64-1-nccl2.4.7-1-py36-f3d3b95-horovod-0.16.4-tf1.14.0-torch1.1.0-mxnet1.4.1-test3
         imagePullPolicy: IfNotPresent
         resources:
-          limits:
-             aliyun.com/gpu: 1
-        env:
-          - name: NVIDIA_VISIBLE_DEVICES
-            value: "0"
-          - name: CUDA_MPS_PIPE_DIRECTORY
-            value: "/tmp/nvidia-mps"
-          - name:  CUDA_MPS_LOG_DIRECTORY
-            value:  "/tmp/nvidia-log"
-          - name: CUDA_VISIBLE_DEVICES
-            value: "0"
-          - name: NVIDIA_DRIVER_CAPABILITIES
-            value: compute,utility
-          - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
-            value: "30"
-        volumeMounts:
-          - name: nvidia-mps
-            mountPath: /tmp/nvidia-mps
-      volumes:
-         - name: nvidia-mps
-           hostPath:
-             path: /tmp/nvidia-mps
+            limits:
+              aliyun.com/gpu: 4
+        command: ["sh", "./launch-example.sh", "1", "4"]  # 1 表示机器的数量， 4表示gpu的数量
+      restartPolicy: Never
