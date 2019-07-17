@@ -15,11 +15,12 @@ import (
 )
 
 const (
-	versionPath   = "/version"
-	apiPrefix     = "/gputopology-scheduler"
-	bindPrefix    = apiPrefix + "/bind"
-	sortPrefix    = apiPrefix + "sort"
-	inspectPrefix = apiPrefix + "/inspect/:nodename"
+	versionPath       = "/version"
+	apiPrefix         = "/gputopology-scheduler"
+	bindPrefix        = apiPrefix + "/bind"
+	sortPrefix        = apiPrefix + "sort"
+	inspectPrefix     = apiPrefix + "/inspect/:nodename"
+	inspectListPrefix = apiPrefix + "/inspect"
 )
 
 var (
@@ -118,6 +119,25 @@ func BindRoute(bind *scheduler.Bind) httprouter.Handle {
 				w.WriteHeader(http.StatusOK)
 			}
 
+			w.Write(resultBody)
+		}
+	}
+}
+
+func InspectRoute(inspect *scheduler.Inspect) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		result := inspect.Handler(ps.ByName("nodename"))
+		
+		if resultBody, err := json.Marshal(result); err != nil {
+			// panic(err)
+			log.Printf("warn: Failed due to %v", err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			errMsg := fmt.Sprintf("{'error':'%s'}", err.Error())
+			w.Write([]byte(errMsg))
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
 			w.Write(resultBody)
 		}
 	}
