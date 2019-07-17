@@ -48,7 +48,7 @@ func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
 	if len(pod.ObjectMeta.Annotations) > 0 {
 		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
 		if found {
-			idList := strings.Split(value, "_")
+			idList := strings.Split(value, ",")
 			for id := range idList {
 				ids = append(ids, int(id))
 			}
@@ -59,14 +59,7 @@ func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
 
 // GetGPUCountFromPodAnnotation gets the GPU Count of the pod, choose the larger one between gpu memory and gpu init container memory
 func GetGPUCountFromPodAnnotation(pod *v1.Pod) (gpuCount int) {
-	if len(pod.ObjectMeta.Annotations) > 0 {
-		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
-		if found && len(value) != 0 {
-			gpuCount += len(strings.Split(value, ","))
-
-		}
-	}
-
+	gpuCount = len(GetGPUIDFromAnnotation(pod))
 	log.Printf("debug: pod %s in ns %s with status %v has GPU Count %d",
 		pod.Name,
 		pod.Namespace,
@@ -97,7 +90,7 @@ func GetUpdatedPodAnnotationSpec(oldPod *v1.Pod, devIds []uint) (newPod *v1.Pod)
 		if i == 0 {
 			devs += fmt.Sprintf("%d", devId)
 		} else {
-			devs += fmt.Sprintf("_%d", devId)
+			devs += fmt.Sprintf(",%d", devId)
 		}
 	}
 
