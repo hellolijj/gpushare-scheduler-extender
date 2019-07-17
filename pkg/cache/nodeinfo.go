@@ -76,6 +76,7 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 			fmt.Sscanf(k, utils.GPU_PRIFX+"%s_%d_%d", &topoAbbr, &gpu1, &gpu2)
 			fmt.Sscanf(v, "%s", &topoDesc)
 			topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoDesc, topoAbbr))
+			topology[gpu2][gpu1] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoDesc, topoAbbr))
 		}
 	}
 
