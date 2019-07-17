@@ -15,10 +15,11 @@ import (
 )
 
 const (
-	versionPath = "/version"
-	apiPrefix   = "/gputopology-scheduler"
-	bindPrefix  = apiPrefix + "/bind"
-	sortPrefix  = apiPrefix + "sort"
+	versionPath   = "/version"
+	apiPrefix     = "/gputopology-scheduler"
+	bindPrefix    = apiPrefix + "/bind"
+	sortPrefix    = apiPrefix + "sort"
+	inspectPrefix = apiPrefix + "/inspect/:nodename"
 )
 
 var (
@@ -149,4 +150,9 @@ func AddBind(router *httprouter.Router, bind *scheduler.Bind) {
 	} else {
 		router.POST(bindPrefix, DebugLogging(BindRoute(bind), bindPrefix))
 	}
+}
+
+func AddInspect(router *httprouter.Router, inspect *scheduler.Inspect) {
+	router.GET(inspectPrefix, DebugLogging(InspectRoute(inspect), inspectPrefix))
+	router.GET(inspectListPrefix, DebugLogging(InspectRoute(inspect), inspectListPrefix))
 }

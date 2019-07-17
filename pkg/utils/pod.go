@@ -38,8 +38,8 @@ func IsCompletePod(pod *v1.Pod) bool {
 }
 
 // IsGSoCPod determines if it's the pod for gsoc scheduler pod
-func IsGSoCPod(pod *v1.Pod) bool {
-	return true
+func IsGPUPod(pod *v1.Pod) bool {
+	return GetGPUCountFromPodResource(pod) > 0
 }
 
 // GetGPUIDFromAnnotation gets GPU ID from Annotation
