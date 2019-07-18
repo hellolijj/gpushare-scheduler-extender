@@ -91,7 +91,7 @@ spec:
       serviceAccount: gpu-schd-extender
       containers:
         - name: gpu-schd-extender
-          image: registry.cn-hangzhou.aliyuncs.com/lijj/gputopology-scheduler-extender:v1
+          image: registry.cn-hangzhou.aliyuncs.com/lijj/gputopology-scheduler-extender:v1.1
 #          imagePullPolicy: IfNotPresent
           env:
           - name: LOG_LEVEL
