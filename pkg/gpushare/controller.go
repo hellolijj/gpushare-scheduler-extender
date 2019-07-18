@@ -79,11 +79,11 @@ func NewController(clientset *kubernetes.Clientset, kubeInformerFactory kubeinfo
 			switch t := obj.(type) {
 			case *v1.Pod:
 				// log.Printf("debug: added pod %s in ns %s", t.Name, t.Namespace)
-				return utils.IsGSoCPod(t)
+				return utils.IsGPUPod(t)
 			case clientgocache.DeletedFinalStateUnknown:
 				if pod, ok := t.Obj.(*v1.Pod); ok {
 					log.Printf("debug: delete pod %s in ns %s", pod.Name, pod.Namespace)
-					return utils.IsGSoCPod(pod)
+					return utils.IsGPUPod(pod)
 				}
 				runtime.HandleError(fmt.Errorf("unable to convert object %T to *v1.Pod in %T", obj, c))
 				return false
