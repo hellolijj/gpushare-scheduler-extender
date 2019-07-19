@@ -89,6 +89,7 @@ func main() {
 
 	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache())
 	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache())
+	gpuTopologyInspect := scheduler.NewGPUShareInspect(controller.GetSchedulerCache())
 
 	router := httprouter.New()
 
@@ -96,6 +97,7 @@ func main() {
 	routes.AddVersion(router)
 	routes.AddPrioritize(router, gpuTopologyPrioritize)
 	routes.AddBind(router, gpuTopologyBind)
+	routes.AddInspect(router, gpuTopologyInspect)
 
 	log.Printf("info: server starting on the port :%s", port)
 	if err := http.ListenAndServe(":"+port, router); err != nil {

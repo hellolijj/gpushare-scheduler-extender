@@ -74,30 +74,28 @@ func (p *topologyPolicy) PreAllocate(n *NodeInfo, req int) (ids []int, score int
 	}
 
 	// 接下来是图中寻找最小生成树问题，参见 prim 算法
-
 	// 标记 最大带宽已经使用
 	n.devs[int(ids[0])].isUsed = true
 	n.devs[int(ids[1])].isUsed = true
-
 	// 计算接下来的卡到 集合ids 的带宽和，将最大到带宽和卡加入到 ids
-	// 循环 req - 2此
+	// 循环 req - 2 次
 	for c := 2; c < req; c++ {
 		// 寻找到集合 d 最大的卡
 		u := -1   // 记录当前遍历的卡
 		max := -1 // 记录当前遍历的卡到集合的带宽
-
+		
 		for i := 0; i < len(n.devs); i++ {
 			if n.devs[i].isUsed == false && calculateFromGPUAndSelectedSets(n, i, ids) > max {
 				u = i
 				max = calculateFromGPUAndSelectedSets(n, i, ids)
 			}
 		}
-
+		
 		if u == -1 { // 说明以上到遍历没有找到卡
 			err = fmt.Errorf("rqu gpu count %v is invalidl", req)
 			return ids, 0, err
 		}
-
+		
 		// 将最高 离ids带宽和 的卡加入ids
 		n.devs[u].isUsed = true
 		ids = append(ids, u)

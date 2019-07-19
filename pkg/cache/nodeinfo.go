@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 	"strconv"
+	"encoding/json"
 )
 
 const (
@@ -31,13 +32,17 @@ type NodeInfo struct {
 
 type TopologyType nvml.P2PLinkType
 
+func (t TopologyType) Desc() string {
+	return nvml.P2PLinkType(t).String()
+}
+
 // Create Node Level
 func NewNodeInfo(node *v1.Node) *NodeInfo {
 	log.Printf("debug: NewNodeInfo() creates nodeInfo for %s", node.Name)
 
 	devMap := map[int]*DeviceInfo{}
 	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
-		devMap[i] = newDeviceInfo(i) // 这里的i 表示什么？device id 吗？
+		devMap[i] = newDeviceInfo(i)
 	}
 
 	gpuTopology := getGPUTopologyFromNode(node, devMap)
@@ -71,37 +76,45 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 	}
 	
 	log.Printf("debug: node %s has annotation %v", node.Name, node.Annotations)
-
-	for k, v := range node.Annotations {
-		// GPU_SYS_0_1: Cross CPU socket
-		if strings.HasPrefix(k, utils.GPU_PRIFX) {
-			var gpu1, gpu2 int
-			var topoAbbr string
-			
-			// 使用 _ 分割获取结果。
-			gpuSplitRes := strings.Split(k, "_")
-			
-			if len(gpuSplitRes) != 4 {
-				log.Printf("warn: annotation topology split error")
-				continue
-			}
-			
-			topoAbbr = gpuSplitRes[1]
-			gpu1, err := strconv.Atoi(gpuSplitRes[2])
-			if err != nil {
-				log.Printf("warn: get gpu1 error: %v", err)
-				continue
-			}
-			gpu2, err = strconv.Atoi(gpuSplitRes[3])
-			if err != nil {
-				log.Printf("warn: get gpu2 error: %v", err)
-				continue
-			}
-			
-			log.Printf("debug: from annotaion %s to get gputoplogy gpu%d and gpu%d 's relations is desc: %s abbr: %s", k, gpu1, gpu2, v, topoAbbr)
-			topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
-			topology[gpu2][gpu1] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
+	
+	gpuTopology, ok := node.Annotations[utils.EnvGPUAnnotation]
+	if !ok {
+		return topology
+	}
+	
+	gpuTopologyMap := map[string]string{}
+	json.Unmarshal([]byte(gpuTopology), &gpuTopologyMap)
+	if len(gpuTopologyMap) == 0 {
+		return topology
+	}
+	
+	for k, v := range gpuTopologyMap {
+		var gpu1, gpu2 int
+		var topoAbbr string
+		
+		// 使用 _ 分割获取结果。
+		gpuSplitRes := strings.Split(k, "_")
+		
+		if len(gpuSplitRes) != 4 {
+			log.Printf("warn: annotation topology split error")
+			continue
 		}
+		
+		topoAbbr = gpuSplitRes[1]
+		gpu1, err := strconv.Atoi(gpuSplitRes[2])
+		if err != nil {
+			log.Printf("warn: get gpu1 error: %v", err)
+			continue
+		}
+		gpu2, err = strconv.Atoi(gpuSplitRes[3])
+		if err != nil {
+			log.Printf("warn: get gpu2 error: %v", err)
+			continue
+		}
+		
+		log.Printf("debug: from annotaion %s to get gputoplogy gpu%d and gpu%d 's relations is desc: %s abbr: %s", k, gpu1, gpu2, v, topoAbbr)
+		topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
+		topology[gpu2][gpu1] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
 	}
 
 	return topology

@@ -15,12 +15,12 @@ type DeviceInfo struct {
 	isUsed bool
 }
 
-func (d *DeviceInfo) GetPods() []*v1.Pod {
-	pods := []*v1.Pod{}
-	for _, pod := range d.podMap {
-		pods = append(pods, pod)
-	}
-	return pods
+func (d *DeviceInfo) IsUsed() bool {
+	return d.isUsed
+}
+
+func (d *DeviceInfo) GetDevId() int {
+	return d.idx
 }
 
 func newDeviceInfo(index int) *DeviceInfo {

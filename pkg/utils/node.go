@@ -19,5 +19,3 @@ func GetGPUCountInNode(node *v1.Node) int {
 
 	return int(val.Value())
 }
-
-

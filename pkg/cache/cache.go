@@ -39,6 +39,7 @@ func NewSchedulerCache(nLister corelisters.NodeLister, pLister corelisters.PodLi
 
 func (cache *SchedulerCache) GetNodeinfos() []*NodeInfo {
 	nodes := []*NodeInfo{}
+	log.Println("debug: get nodes info %v", cache.nodes)
 	for _, n := range cache.nodes {
 		nodes = append(nodes, n)
 	}
@@ -63,6 +64,7 @@ func (cache *SchedulerCache) BuildCache() error {
 			}
 
 			err = cache.AddOrUpdatePod(pod)
+			
 			if err != nil {
 				return err
 			}
@@ -132,6 +134,8 @@ func (cache *SchedulerCache) GetNodeInfo(name string) (*NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	log.Printf("debug: cache nodes %v", cache.nodes)
 
 	cache.nLock.Lock()
 	defer cache.nLock.Unlock()
@@ -141,7 +145,7 @@ func (cache *SchedulerCache) GetNodeInfo(name string) (*NodeInfo, error) {
 		n = NewNodeInfo(node)
 		cache.nodes[name] = n
 	} else {
-		// if the existing node turn from non gpushare to gpushare
+		// if the existing node turn from non gpu to gpu
 		if utils.GetGPUCountInNode(n.node) <= 0 && utils.GetGPUCountInNode(node) > 0 {
 			log.Printf("debug: GetNodeInfo() need update node %s from %v to %v",
 				name,
