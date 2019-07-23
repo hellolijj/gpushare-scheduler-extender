@@ -40,7 +40,7 @@ func (d *DeviceInfo) addPod(pod *v1.Pod) {
 	defer d.rwmu.Unlock()
 	d.podMap[pod.UID] = pod
 	d.isUsed = true
-	log.Printf("debug: dev.addPod() after updated is %v", d.podMap)
+	log.Printf("debug: dev.addPod() is success", )
 }
 
 func (d *DeviceInfo) removePod(pod *v1.Pod) {
@@ -52,6 +52,5 @@ func (d *DeviceInfo) removePod(pod *v1.Pod) {
 	defer d.rwmu.Unlock()
 	delete(d.podMap, pod.UID)
 	d.isUsed = false
-	log.Printf("debug: dev.removePod() after updated is %v",
-		d.podMap)
+	log.Printf("debug: dev.removePod() us success")
 }

@@ -299,16 +299,17 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	log.Printf("debug: reqGPU for pod %s in ns %s: %d", pod.Name, pod.Namespace, reqGPU)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 	
-	topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
+	// topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
+	bestScheduler, err := NewScheduler(n, NewBestPolicy())
 	if err != nil {
-		log.Printf("warn: Failed to get scheduler object %v", topologyScheduler)
+		log.Printf("warn: Failed to get scheduler object %v", bestScheduler)
 		return
 	}
 
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			
-			ids, err := topologyScheduler.policy.Allocate(n, reqGPU)
+			ids, err := bestScheduler.policy.Allocate(n, reqGPU)
 			if err != nil {
 				log.Printf("allocate gpu to node failed, resaon: %v", err)
 				return
