@@ -300,16 +300,17 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 	
 	// topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
-	bestScheduler, err := NewScheduler(n, NewBestPolicy())
+	// bestScheduler, err := NewScheduler(n, NewBestPolicy())
+	staticScheduler, err := NewScheduler(n, NewStaticDGX1Policy())
 	if err != nil {
-		log.Printf("warn: Failed to get scheduler object %v", bestScheduler)
+		log.Printf("warn: Failed to get scheduler object %v", staticScheduler)
 		return
 	}
 
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			
-			ids, err := bestScheduler.policy.Allocate(n, reqGPU)
+			ids, err := staticScheduler.policy.Allocate(n, reqGPU)
 			if err != nil {
 				log.Printf("allocate gpu to node failed, resaon: %v", err)
 				return

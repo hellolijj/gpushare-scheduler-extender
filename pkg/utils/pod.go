@@ -3,9 +3,9 @@ package utils
 import (
 	"fmt"
 	"log"
-	"time"
-
+	"strconv"
 	"strings"
+	"time"
 
 	"k8s.io/api/core/v1"
 )
@@ -49,8 +49,12 @@ func GetGPUIDFromAnnotation(pod *v1.Pod) []int {
 		value, found := pod.ObjectMeta.Annotations[EnvResourceIndex]
 		if found {
 			idList := strings.Split(value, ",")
-			for id := range idList {
-				ids = append(ids, int(id))
+			for _, idStr := range idList {
+				id, err := strconv.Atoi(idStr)
+				if err != nil {
+					return []int{}
+				}
+				ids = append(ids, id)
 			}
 		}
 	}

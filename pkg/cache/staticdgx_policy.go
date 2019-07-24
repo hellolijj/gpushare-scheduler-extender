@@ -14,23 +14,38 @@ const (
 
 // Policy Definitions
 type staticDGX1PascalPolicy struct{}
-type staticDGX1VoltaPolicy struct{}
-type staticDGX2VoltaPolicy struct{}
+
 
 // NewStaticDGX1Policy creates a new StaticDGX1Policy for gpuType.
-func NewStaticDGX1Policy(gpuType GPUType) Policy {
-	if gpuType == GPUTypePascal {
-		return &staticDGX1PascalPolicy{}
-	}
-	if gpuType == GPUTypeVolta {
-		return &staticDGX1VoltaPolicy{}
-	}
-	return nil
+func NewStaticDGX1Policy() Policy {
+	return &staticDGX1PascalPolicy{}
 }
 
-// NewStaticDGX2Policy creates a new StaticDGX2Policy.
-func NewStaticDGX2Policy() Policy {
-	return &staticDGX1VoltaPolicy{}
+
+func (s *staticDGX1PascalPolicy) Score(n *NodeInfo, req int) (int, error) {
+	availableGPUs := n.getAvailableGPUs()
+	
+	if req <= 0 || req > availableGPUs {
+		err := fmt.Errorf("rqu gpu %v is invalid", req)
+		return 0, err
+	}
+	
+	ids, _, err := s.PreAllocate(n, req)
+	if err != nil {
+		return 0, err
+	}
+	
+	// 如果要有返回值，统一打分10
+	if len(ids) > 0 {
+		return 10, nil
+	} else {
+		return 0, nil
+	}
+}
+
+func (s *staticDGX1PascalPolicy) Allocate(n *NodeInfo, req int) ([]int, error) {
+	ids, _, err := s.PreAllocate(n, req)
+	return ids, err
 }
 
 // PreAllocate 计算分配方案，及该方案的打分
