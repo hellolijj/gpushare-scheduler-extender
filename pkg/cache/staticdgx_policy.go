@@ -1,6 +1,12 @@
 package cache
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	
+	"k8s.io/api/core/v1"
+)
 
 // GPUType represents the valid set of GPU
 // types a Static DGX policy can be created for.
@@ -15,26 +21,31 @@ const (
 // Policy Definitions
 type staticDGX1PascalPolicy struct{}
 
-
 // NewStaticDGX1Policy creates a new StaticDGX1Policy for gpuType.
-func NewStaticDGX1Policy() Policy {
-	return &staticDGX1PascalPolicy{}
-}
+func NewStaticDGX1Policy(n *v1.Node) Policy {
 
+	nodeType := utils.GetNodeTypeFromAnnotation(n)
+	switch nodeType {
+	case utils.ShenLongNode:
+		return &staticDGX1PascalPolicy{}
+	case utils.UnknownNodeType:
+	}
+	return nil
+}
 
 func (s *staticDGX1PascalPolicy) Score(n *NodeInfo, req int) (int, error) {
 	availableGPUs := n.getAvailableGPUs()
-	
+
 	if req <= 0 || req > availableGPUs {
 		err := fmt.Errorf("rqu gpu %v is invalid", req)
 		return 0, err
 	}
-	
+
 	ids, _, err := s.PreAllocate(n, req)
 	if err != nil {
 		return 0, err
 	}
-	
+
 	// 如果要有返回值，统一打分10
 	if len(ids) > 0 {
 		return 10, nil
@@ -74,7 +85,7 @@ func (s *staticDGX1PascalPolicy) PreAllocate(n *NodeInfo, req int) (ids []int, s
 	if len(res) > 0 {
 		return res, 10, nil
 	}
-	
+
 	return []int{}, 0, fmt.Errorf("no is invalid gpu")
 }
 

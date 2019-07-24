@@ -7,6 +7,7 @@ const (
 	EnvAssignedFlag       = "ALIYUN_COM_GPU_ASSIGNED"
 	EnvResourceAssumeTime = "ALIYUN_COM_GPU_ASSUME_TIME"
 	EnvGPUAnnotation      = "GPU_TOPOLOGY"
+	EnvNodeType           = "NODE_TYPE"
 	
-	GPU_PRIFX   = "GPU_"
+	NodeTypeSHENGLONG   = "ecs.sccgn6.24xlarge"
 )

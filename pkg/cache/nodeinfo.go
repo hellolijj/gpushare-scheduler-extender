@@ -120,6 +120,8 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 	return topology
 }
 
+
+
 func (n *NodeInfo) GetName() string {
 	return n.name
 }
@@ -301,7 +303,7 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	
 	// topologyScheduler, err := NewScheduler(n, NewTopologyPolicy())
 	// bestScheduler, err := NewScheduler(n, NewBestPolicy())
-	staticScheduler, err := NewScheduler(n, NewStaticDGX1Policy())
+	staticScheduler, err := NewScheduler(n, NewStaticDGX1Policy(n.node))
 	if err != nil {
 		log.Printf("warn: Failed to get scheduler object %v", staticScheduler)
 		return
@@ -310,7 +312,7 @@ func (n *NodeInfo) allocateGPUID(pod *v1.Pod) (candidateDevID []uint, found bool
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
 			
-			ids, err := staticScheduler.policy.Allocate(n, reqGPU)
+			ids, err := staticScheduler.Allocate(reqGPU)
 			if err != nil {
 				log.Printf("allocate gpu to node failed, resaon: %v", err)
 				return
@@ -354,3 +356,21 @@ func (n *NodeInfo) getAllGPUs() (allGPUs int) {
 	log.Printf("debug: getAllGPUs: %v in node %s, and dev %v", allGPUs, n.name, n.devs)
 	return allGPUs
 }
+
+
+var (
+	nodeype = map[string]nvml.P2PLinkType{
+		"PSB": 1,
+		"PIX": 2,
+		"PXB": 3,
+		"PHB": 4,
+		"NODE": 5,
+		"SYS": 6,
+		"NV1": 7,
+		"NV2": 8,
+		"NV3": 9,
+		"NV4": 10,
+		"NV5": 11,
+		"NV6": 12,
+	}
+)
