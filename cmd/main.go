@@ -73,9 +73,9 @@ func main() {
 		port = "39997"
 	}
 
-	var schedulerPolicy, staticDgx string
-	flag.StringVar(&schedulerPolicy, "policy", "", "config gpu select policy, , for more detail: https://github.com/hellolijj/")
-	flag.StringVar(&staticDgx, "staticdgx", "", "config static node dgx, for more detail: https://github.com/hellolijj/")
+	var schedulerPolicy, config string
+	flag.StringVar(&schedulerPolicy, "-policy", "", "config gpu select policy, , for more detail: https://github.com/hellolijj/")
+	flag.StringVar(&config, "-config", "", "config static node dgx, for more detail: https://github.com/hellolijj/")
 	flag.Parse()
 	if len(schedulerPolicy) == 0 {
 		schedulerPolicy = "simple"
@@ -101,10 +101,12 @@ func main() {
 
 	go controller.Run(threadness, stopCh)
 
-	policy, err := policy.NewPolicy(schedulerPolicy, staticDgx)
+	policy, err := policy.NewPolicy(schedulerPolicy, config)
+	log.Printf("info: build policy %v \n", policy)
 	if err != nil {
-		log.Fatalf("Failed to build policy due to %v", err)
+		return
 	}
+	
 
 	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache(), policy)
 	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache(), policy)

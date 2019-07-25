@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	"fmt"
 )
 
 type Policy struct {
@@ -15,10 +16,15 @@ type Policy struct {
 
 // NewAllocator creates a new Allocator using the given allocation policy
 func NewPolicy(name, config string) (*Policy, error) {
+	runnerPolicy := newPolicyRunner(name, config)
+	if runnerPolicy == nil || len(name) == 0 {
+		return nil, fmt.Errorf("error in policy %v", name)
+	}
+	
 	return &Policy{
 		name:   name,
 		config: config,
-		Run:    newPolicyRunner(name, config),
+		Run:    runnerPolicy,
 		rwmu:   new(sync.RWMutex),
 	}, nil
 }
@@ -27,7 +33,7 @@ func newPolicyRunner(name, config string) Run {
 	switch name {
 	case "simple":
 		return NewSimpleRunner()
-	case "base_effort":
+	case "best_effort":
 		return NewBestRunner()
 	case "static":
 		return NewStaticRunner()

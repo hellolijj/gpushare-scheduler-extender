@@ -84,7 +84,7 @@ func (p Policy) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod, n *utils.
 }
 
 
-func (policy Policy) allocateGPUID(pod *v1.Pod, n *utils.NodeInfo) (candidateDevID []uint, found bool) {
+func (p Policy) allocateGPUID(pod *v1.Pod, n *utils.NodeInfo) (candidateDevID []uint, found bool) {
 	reqGPU := 0
 	found = false
 	availableGPUs := n.GetAvailableGPUs()
@@ -94,7 +94,7 @@ func (policy Policy) allocateGPUID(pod *v1.Pod, n *utils.NodeInfo) (candidateDev
 	
 	if reqGPU > 0 {
 		if availableGPUs > 0 && availableGPUs-reqGPU >= 0 {
-			ids, err := policy.Run.Allocate(n, reqGPU)
+			ids, err := p.Run.Allocate(n, reqGPU)
 			if err != nil {
 				log.Printf("allocate gpu to node failed, resaon: %v", err)
 				return
