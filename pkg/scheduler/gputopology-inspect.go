@@ -2,11 +2,12 @@ package scheduler
 
 import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 )
 
-func NewGPUShareInspect(c *cache.SchedulerCache) *Inspect {
+func NewGPUTopologyInspect(c *cache.SchedulerCache) *Inspect {
 	return &Inspect{
-		Name:  "gpushareinspect",
+		Name:  "gputopologyinspect",
 		cache: c,
 	}
 }
@@ -20,7 +21,7 @@ type Node struct {
 	Name       string    `json:"name"`
 	TotalGPU   int       `json:"totalGPU"`
 	UsedGPU    int       `json:"usedGPU"`
-	Topology [][]cache.TopologyType    `json:"topology"`
+	Topology [][]utils.TopologyType    `json:"topology"`
 }
 
 

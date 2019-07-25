@@ -14,7 +14,7 @@ import (
 type SchedulerCache struct {
 
 	// a map from pod key to podState.
-	nodes map[string]*NodeInfo
+	nodes map[string]*utils.NodeInfo
 
 	// nodeLister can list/get nodes from the shared informer's store.
 	nodeLister corelisters.NodeLister
@@ -29,7 +29,7 @@ type SchedulerCache struct {
 
 func NewSchedulerCache(nLister corelisters.NodeLister, pLister corelisters.PodLister) *SchedulerCache {
 	return &SchedulerCache{
-		nodes:      make(map[string]*NodeInfo),
+		nodes:      make(map[string]*utils.NodeInfo),
 		nodeLister: nLister,
 		podLister:  pLister,
 		knownPods:  make(map[types.UID]*v1.Pod),
@@ -37,8 +37,8 @@ func NewSchedulerCache(nLister corelisters.NodeLister, pLister corelisters.PodLi
 	}
 }
 
-func (cache *SchedulerCache) GetNodeinfos() []*NodeInfo {
-	nodes := []*NodeInfo{}
+func (cache *SchedulerCache) GetNodeinfos() []*utils.NodeInfo {
+	nodes := []*utils.NodeInfo{}
 	log.Println("debug: get nodes info %v", cache.nodes)
 	for _, n := range cache.nodes {
 		nodes = append(nodes, n)
@@ -95,13 +95,13 @@ func (cache *SchedulerCache) AddOrUpdatePod(pod *v1.Pod) error {
 		log.Printf("debug: pod %s in ns %s is not assigned to any node, skip", pod.Name, pod.Namespace)
 		return nil
 	}
-
+	
 	n, err := cache.GetNodeInfo(pod.Spec.NodeName)
 	if err != nil {
 		return err
 	}
 	podCopy := pod.DeepCopy()
-	if n.addOrUpdatePod(podCopy) {
+	if n.AddOrUpdatePod(podCopy) {
 		// put it into known pod
 		cache.rememberPod(pod.UID, podCopy)
 	} else {
@@ -120,7 +120,7 @@ func (cache *SchedulerCache) RemovePod(pod *v1.Pod) {
 	n, err := cache.GetNodeInfo(pod.Spec.NodeName)
 	if err == nil {
 		log.Printf("debug: Remove pod info: %v", pod.Name)
-		n.removePod(pod)
+		n.RemovePod(pod)
 	} else {
 		log.Printf("debug: Failed to get node %s due to %v", pod.Spec.NodeName, err)
 	}
@@ -129,7 +129,7 @@ func (cache *SchedulerCache) RemovePod(pod *v1.Pod) {
 }
 
 // Get or build nodeInfo if it doesn't exist
-func (cache *SchedulerCache) GetNodeInfo(name string) (*NodeInfo, error) {
+func (cache *SchedulerCache) GetNodeInfo(name string) (*utils.NodeInfo, error) {
 	node, err := cache.nodeLister.Get(name)
 	if err != nil {
 		return nil, err
@@ -142,16 +142,16 @@ func (cache *SchedulerCache) GetNodeInfo(name string) (*NodeInfo, error) {
 	n, ok := cache.nodes[name]
 
 	if !ok {
-		n = NewNodeInfo(node)
+		n = utils.NewNodeInfo(node)
 		cache.nodes[name] = n
 	} else {
 		// if the existing node turn from non gpu to gpu
-		if utils.GetGPUCountInNode(n.node) <= 0 && utils.GetGPUCountInNode(node) > 0 {
+		if utils.GetGPUCountInNode(n.GetNode()) <= 0 && utils.GetGPUCountInNode(node) > 0 {
 			log.Printf("debug: GetNodeInfo() need update node %s from %v to %v",
 				name,
-				n.node,
+				n.GetNode(),
 				node)
-			n = NewNodeInfo(node)
+			n = utils.NewNodeInfo(node)
 			cache.nodes[name] = n
 		}
 

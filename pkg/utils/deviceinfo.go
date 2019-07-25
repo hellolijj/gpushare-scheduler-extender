@@ -1,4 +1,4 @@
-package cache
+package utils
 
 import (
 	"log"
@@ -31,7 +31,7 @@ func newDeviceInfo(index int) *DeviceInfo {
 	}
 }
 
-func (d *DeviceInfo) addPod(pod *v1.Pod) {
+func (d *DeviceInfo) AddPod(pod *v1.Pod) {
 	log.Printf("debug: dev.addPod() Pod %s in ns %s with the GPU ID %d will be added to device map",
 		pod.Name,
 		pod.Namespace,
@@ -43,7 +43,7 @@ func (d *DeviceInfo) addPod(pod *v1.Pod) {
 	log.Printf("debug: dev.addPod() is success", )
 }
 
-func (d *DeviceInfo) removePod(pod *v1.Pod) {
+func (d *DeviceInfo) RemovePod(pod *v1.Pod) {
 	log.Printf("debug: dev.removePod() Pod %s in ns %s with the GPU ID %d will be removed from device map",
 		pod.Name,
 		pod.Namespace,

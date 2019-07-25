@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 )
 
 func (in Inspect) Handler(name string) *Result {
@@ -31,7 +31,7 @@ func (in Inspect) Handler(name string) *Result {
 	}
 }
 
-func buildNode(info *cache.NodeInfo) *Node {
+func buildNode(info *utils.NodeInfo) *Node {
 	
 	topology := info.GetGPUTopology()
 	

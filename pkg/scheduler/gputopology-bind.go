@@ -10,13 +10,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/policy"
 )
 
 const (
 	OptimisticLockErrorMsg = "the object has been modified; please apply your changes to the latest version and try again"
 )
 
-func NewGPUShareBind(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *Bind {
+func NewGPUShareBind(clientset *kubernetes.Clientset, c *cache.SchedulerCache, policy *policy.Policy) *Bind {
 	return &Bind{
 		Name: "gputopologybinding",
 		Func: func(name string, namespace string, podUID types.UID, node string, c *cache.SchedulerCache) error {
@@ -31,7 +32,7 @@ func NewGPUShareBind(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *
 				log.Printf("warn: Failed to handle pod %s in ns %s due to error %v", name, namespace, err)
 				return err
 			}
-			err = nodeInfo.Allocate(clientset, pod)
+			err = policy.Allocate(clientset, pod, nodeInfo)
 			if err != nil {
 				log.Printf("warn: Failed to handle pod %s in ns %s due to error %v", name, namespace, err)
 				return err

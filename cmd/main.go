@@ -13,9 +13,10 @@ import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/routes"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/scheduler"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils/signals"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/policy"
+	
 	"github.com/comail/colog"
 	"github.com/julienschmidt/httprouter"
-
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -72,6 +73,19 @@ func main() {
 		port = "39997"
 	}
 
+	var schedulerPolicy, staticDgx string
+	flag.StringVar(&schedulerPolicy, "policy", "", "config gpu select policy, , for more detail: https://github.com/hellolijj/")
+	flag.StringVar(&staticDgx, "staticdgx", "", "config static node dgx, for more detail: https://github.com/hellolijj/")
+	flag.Parse()
+	if len(schedulerPolicy) == 0 {
+		schedulerPolicy = "simple"
+	}
+	if schedulerPolicy != "simple" || schedulerPolicy != "best_effort" || schedulerPolicy != "static" {
+		log.Printf("uninvalid gpu policy %v", schedulerPolicy)
+		return
+	}
+	// to valid static gpu config
+
 	// Set up signals so we handle the first shutdown signal gracefully.
 	stopCh := signals.SetupSignalHandler()
 
@@ -87,9 +101,14 @@ func main() {
 
 	go controller.Run(threadness, stopCh)
 
-	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache())
-	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache())
-	gpuTopologyInspect := scheduler.NewGPUShareInspect(controller.GetSchedulerCache())
+	policy, err := policy.NewPolicy(schedulerPolicy, staticDgx)
+	if err != nil {
+		log.Fatalf("Failed to build policy due to %v", err)
+	}
+
+	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache(), policy)
+	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache(), policy)
+	gpuTopologyInspect := scheduler.NewGPUTopologyInspect(controller.GetSchedulerCache())
 
 	router := httprouter.New()
 

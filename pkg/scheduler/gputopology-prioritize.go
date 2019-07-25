@@ -4,14 +4,15 @@ import (
 	"log"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/policy"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
-func NewGPUTopologyPrioritize(clientset *kubernetes.Clientset, c *cache.SchedulerCache) *Prioritize {
+func NewGPUTopologyPrioritize(clientset *kubernetes.Clientset, c *cache.SchedulerCache, policy *policy.Policy) *Prioritize {
 	return &Prioritize{
 		Name: "gputopologysort",
 		Func: func(pod v1.Pod, nodes []v1.Node, c *cache.SchedulerCache) (*schedulerapi.HostPriorityList, error) {
@@ -27,22 +28,14 @@ func NewGPUTopologyPrioritize(clientset *kubernetes.Clientset, c *cache.Schedule
 					log.Printf("warn: Failed to handle node %s in ns %s due to error %v", node.Name, node.Namespace, err)
 					return &priorityList, err
 				}
-				
-				// topologyScheduler, err := cache.NewScheduler(nodeInfo, cache.NewTopologyPolicy())
-				// bestScheduler, err := cache.NewScheduler(nodeInfo, cache.NewBestPolicy())
-				staticScheduler, err := cache.NewScheduler(nodeInfo, cache.NewStaticDGX1Policy(nodeInfo.GetNode()))
-				if err != nil {
-					log.Printf("warn: Failed to get scheduler object %v", staticScheduler)
-					return &priorityList, err
-				}
 
 				// here to sort in node
-				score, err := staticScheduler.Score(reqGPU)
+				score, err := policy.Score(nodeInfo, reqGPU)
 				if err != nil {
 					log.Printf("warn: Failed to score in node %s in ns %s due to error %v", node.Name, node.Namespace, err)
 					return &priorityList, err
 				}
-				
+
 				priorityList[i] = schedulerapi.HostPriority{
 					Host:  node.Name,
 					Score: score,
