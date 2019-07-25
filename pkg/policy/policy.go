@@ -18,17 +18,19 @@ func NewPolicy(name, config string) (*Policy, error) {
 	return &Policy{
 		name:   name,
 		config: config,
-		Run:    newPolicyRuner(name, config),
+		Run:    newPolicyRunner(name, config),
 		rwmu:   new(sync.RWMutex),
 	}, nil
 }
 
-func newPolicyRuner(name, config string) Run {
+func newPolicyRunner(name, config string) Run {
 	switch name {
 	case "simple":
-		return NewSimpleRun()
+		return NewSimpleRunner()
 	case "base_effort":
-		return NewBestRun()
+		return NewBestRunner()
+	case "static":
+		return NewStaticRunner()
 	default:
 	}
 	return nil

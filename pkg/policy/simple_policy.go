@@ -6,22 +6,22 @@ import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 )
 
-type simpleRun struct{}
+type simpleRunner struct{}
 
 // NewSimplePolicy creates a new SimplePolicy.
-func NewSimpleRun() Run {
-	return &simpleRun{}
+func NewSimpleRunner() Run {
+	return &simpleRunner{}
 }
 
 // 所有节点的打分都是一样的
-func (p *simpleRun) Score(n *utils.NodeInfo, ques int) (int, error) {
+func (s *simpleRunner) Score(n *utils.NodeInfo, ques int) (int, error) {
 	if ques <= 0 {
 		return 0, nil
 	}
 	return 10, nil
 }
 
-func (p *simpleRun) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
+func (s *simpleRunner) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
 	availableGPUs := n.GetAvailableGPUs()
 	if req <= 0 || req > availableGPUs {
 		err := fmt.Errorf("rqu gpu count %v is invalid", req)

@@ -5,26 +5,26 @@ import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 )
 
-type bestRun struct{}
+type bestRunner struct{}
 
-func NewBestRun() Run {
-	return &bestRun{}
+func NewBestRunner() Run {
+	return &bestRunner{}
 }
 
 
 // Allocate GPUs following a simple policy.
-func (b *bestRun) Score(n *utils.NodeInfo, req int) (int, error) {
+func (b *bestRunner) Score(n *utils.NodeInfo, req int) (int, error) {
 	_, score, err := b.PreAllocate(n, req)
 	return score, err
 }
 
-func (b *bestRun) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
+func (b *bestRunner) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
 	ids, _, err := b.PreAllocate(n, req)
 	return ids, err
 }
 
-// PreAllocate 计算分配方案，及该方案的打分
-func (b *bestRun) PreAllocate(n *utils.NodeInfo, req int) (ids []int, score int, err error) {
+// bestRunner 计算分配方案，及该方案的打分
+func (b *bestRunner) PreAllocate(n *utils.NodeInfo, req int) (ids []int, score int, err error) {
 	availableGPUs := n.GetAvailableGPUs()
 	if req <= 0 || req > availableGPUs {
 		err = fmt.Errorf("rqu gpu count %v is invalid", req)
