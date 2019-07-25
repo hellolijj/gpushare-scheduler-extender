@@ -27,6 +27,8 @@ func newPolicyRuner(name, config string) Run {
 	switch name {
 	case "simple":
 		return NewSimpleRun()
+	case "base_effort":
+		return NewBestRun()
 	default:
 	}
 	return nil
