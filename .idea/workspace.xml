@@ -2,32 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a316356a-5499-426e-bcb6-d7c1173d2e0d" name="Default" comment="update kube-scheduler.yaml 2">
-      <change afterPath="$PROJECT_DIR$/pkg/cache/scheduler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pkg/cache/simple_score_policy.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pkg/cache/topology_score_policy.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pkg/utils/topology.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml/bindings.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml/nvml.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml/nvml.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml/nvml_dl.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml/nvml_dl.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/gsoc-scheduler-policy-config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/gsoc-scheduler-policy-config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lijj.go" beforeDir="false" afterPath="$PROJECT_DIR$/lijj.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cache/cache.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/cache/cache.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cache/edge.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/cache/nodeinfo.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/cache/nodeinfo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/routes/routes.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/routes/routes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/gpushare-inspect.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/gputopology-predicate.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/inspect.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/predicate.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/scheduler/prioritize.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/scheduler/prioritize.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/utils/const.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/utils/const.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/utils/node.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/utils/node.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/utils/pod.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/utils/pod.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/gputopology-schd-extender.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/gputopology-schd-extender.yaml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -38,17 +15,65 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="gpu-schd-extender.yaml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/config/gpu-schd-extender.yaml">
+      <file leaf-file-name="policy.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pkg/policy/policy.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="281">
-              <caret line="94" column="10" selection-start-line="94" selection-start-column="10" selection-end-line="94" selection-end-column="10" />
+            <state relative-caret-position="304">
+              <caret line="33" column="12" lean-forward="true" selection-start-line="33" selection-start-column="12" selection-end-line="33" selection-end-column="12" />
+              <folding>
+                <element signature="e#16#110#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gsoc-scheduler-policy-config.json" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/config/gsoc-scheduler-policy-config.json">
+      <file leaf-file-name="staticdgx_policy.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pkg/policy/staticdgx_policy.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="383">
+              <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
+              <folding>
+                <element signature="e#16#132#0" expanded="true" />
+                <element signature="e#958#978#0" expanded="true" />
+                <element signature="e#1874#1900#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="simple_policy.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pkg/policy/simple_policy.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="435">
+              <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+              <folding>
+                <element signature="e#16#109#0" expanded="true" />
+                <element signature="e#333#353#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gputopology-schd-extender.yaml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/config/gputopology-schd-extender.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="311">
+              <caret line="96" column="14" lean-forward="true" selection-start-line="96" selection-start-column="14" selection-end-line="96" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Dockerfile" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Dockerfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="9" column="80" lean-forward="true" selection-start-line="9" selection-start-column="49" selection-end-line="9" selection-end-column="80" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gputopology-scheduler-policy-config.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/gputopology-scheduler-policy-config.json">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="195">
               <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
@@ -56,35 +81,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
+      <file leaf-file-name="kube-scheduler.yaml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/kube-scheduler.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" selection-start-line="2" selection-end-line="2" />
+            <state relative-caret-position="195">
+              <caret line="13" column="2" selection-start-line="13" selection-start-column="2" selection-end-line="19" selection-end-column="10" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test.yaml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/samples/test.yaml">
+      <file leaf-file-name="besteffort_policy.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pkg/policy/besteffort_policy.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="40" selection-start-line="27" selection-start-column="40" selection-end-line="27" selection-end-column="40" />
+            <state relative-caret-position="375">
+              <caret line="28" column="35" selection-start-line="28" selection-start-column="35" selection-end-line="28" selection-end-column="35" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="topology_score_policy.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pkg/cache/topology_score_policy.go">
+      <file leaf-file-name="allocate.go" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pkg/policy/allocate.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="30" column="10" selection-start-line="30" selection-start-column="10" selection-end-line="30" selection-end-column="10" />
+            <state relative-caret-position="-4">
+              <caret line="88" column="17" lean-forward="true" selection-start-line="88" selection-start-column="17" selection-end-line="88" selection-end-column="17" />
               <folding>
-                <element signature="e#15#99#0" expanded="true" />
-                <element signature="e#801#823#0" expanded="true" />
-                <element signature="n#!!block;n#getMinScoreGpu#0" />
-                <element signature="n#!!block;n#calculateGPUPairScore#0" />
-                <element signature="n#!!block;n#getMaxScoreLink#0" />
+                <element signature="e#16#217#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -94,45 +115,9 @@
         <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-bind.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="259">
-              <caret line="33" column="32" selection-start-line="33" selection-start-column="32" selection-end-line="33" selection-end-column="32" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="scheduler.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pkg/cache/scheduler.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="12" column="10" selection-start-line="12" selection-start-column="10" selection-end-line="12" selection-end-column="10" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="nodeinfo.go" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/pkg/cache/nodeinfo.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4440">
-              <caret line="315" column="1" selection-start-line="315" selection-start-column="1" selection-end-line="315" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="const.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pkg/utils/const.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="6" column="17" selection-start-line="6" selection-start-column="17" selection-end-line="6" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="deviceinfo.go" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pkg/cache/deviceinfo.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="48" column="33" selection-start-line="48" selection-start-column="33" selection-end-line="48" selection-end-column="33" />
+              <caret line="34" column="29" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
               <folding>
-                <element signature="e#15#96#0" expanded="true" />
+                <element signature="e#19#366#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -140,11 +125,24 @@
       </file>
     </leaf>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
   <component name="FindInProjectRecents">
     <findStrings>
       <find>gsoc-scheduler-policy-config.json</find>
       <find>gsoc</find>
       <find>c</find>
+      <find>LOG_LEVEL</find>
+      <find>PORT</find>
+      <find>addOrUpdatePod</find>
+      <find>remo</find>
+      <find>cache</find>
+      <find>policy</find>
     </findStrings>
     <replaceStrings>
       <replace>gpu-schd-extender</replace>
@@ -163,10 +161,8 @@
         <option value="$PROJECT_DIR$/pkg/scheduler/gpushare-predicate.go" />
         <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-predicate.go" />
         <option value="$PROJECT_DIR$/pkg/scheduler/gpushare-bind.go" />
-        <option value="$PROJECT_DIR$/pkg/cache/cache.go" />
         <option value="$PROJECT_DIR$/pkg/gpushare/controller.go" />
         <option value="$PROJECT_DIR$/pkg/scheduler/gpushare-inspect.go" />
-        <option value="$PROJECT_DIR$/pkg/scheduler/inspect.go" />
         <option value="$PROJECT_DIR$/samples/docker/run.sh" />
         <option value="$PROJECT_DIR$/samples/docker/main.py" />
         <option value="$PROJECT_DIR$/samples/docker/Dockerfile" />
@@ -177,8 +173,6 @@
         <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-priority.go" />
         <option value="$PROJECT_DIR$/pkg/scheduler/priority.go" />
         <option value="$PROJECT_DIR$/pkg/scheduler/prioritize.go" />
-        <option value="$PROJECT_DIR$/cmd/main.go" />
-        <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go" />
         <option value="$PROJECT_DIR$/pkg/routes/routes.go" />
         <option value="$PROJECT_DIR$/config/gpushare-schd-extender.yaml" />
         <option value="$PROJECT_DIR$/pkg/utils/const.go" />
@@ -187,7 +181,30 @@
         <option value="$PROJECT_DIR$/config/kube-scheduler.yaml" />
         <option value="$PROJECT_DIR$/config/gsoc-scheduler-policy-config.json" />
         <option value="$PROJECT_DIR$/samples/test.yaml" />
+        <option value="$PROJECT_DIR$/inspect/main.go" />
+        <option value="$PROJECT_DIR$/pkg/cache/scheduler.go" />
+        <option value="$PROJECT_DIR$/pkg/policy.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/scheduler.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/topology_policy.go" />
+        <option value="$PROJECT_DIR$/pkg/cache/policy/policy.go" />
         <option value="$PROJECT_DIR$/pkg/cache/nodeinfo.go" />
+        <option value="$PROJECT_DIR$/pkg/cache/cache.go" />
+        <option value="$PROJECT_DIR$/pkg/utils/deviceinfo.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/allocate.go" />
+        <option value="$PROJECT_DIR$/pkg/utils/nodeinfo.go" />
+        <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-inspect.go" />
+        <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-bind.go" />
+        <option value="$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go" />
+        <option value="$PROJECT_DIR$/pkg/scheduler/inspect.go" />
+        <option value="$PROJECT_DIR$/cmd/main.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/config.go" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/pkg/policy/policy.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/besteffort_policy.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/staticdgx_policy.go" />
+        <option value="$PROJECT_DIR$/pkg/policy/simple_policy.go" />
+        <option value="$PROJECT_DIR$/Dockerfile" />
+        <option value="$PROJECT_DIR$/config/gputopology-schd-extender.yaml" />
       </list>
     </option>
   </component>
@@ -212,6 +229,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -222,28 +240,59 @@
             <path>
               <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
               <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
+              <item name="cmd" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
+              <item name="config" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
               <item name="pkg" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
               <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
               <item name="pkg" type="462c0819:PsiDirectoryNode" />
-              <item name="cache" type="462c0819:PsiDirectoryNode" />
+              <item name="policy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
+              <item name="pkg" type="462c0819:PsiDirectoryNode" />
+              <item name="scheduler" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gpushare-scheduler-extender" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gpushare-scheduler-extender" type="462c0819:PsiDirectoryNode" />
+              <item name="pkg" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="GO_FMT" value="false" />
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/lijunjun/go/src/github.com/AliyunContainerService/gpushare-scheduler-extender/samples/test.yaml&#10;main&#9;FILE&#9;file:///Users/lijunjun/go/src/github.com/AliyunContainerService/gpushare-scheduler-extender/cmd/main.go" />
+    <property name="add_unversioned_files" value="$PROJECT_DIR$/.gitignore" />
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.vendoring.notification.had.been.shown" value="true" />
     <property name="last_opened_file_path" value="$USER_HOME$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pkg/utils" />
+      <recent name="$PROJECT_DIR$/pkg" />
+      <recent name="$PROJECT_DIR$/pkg/cache" />
+      <recent name="$PROJECT_DIR$/pkg/policy" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -290,54 +339,42 @@
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19742489" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16165951" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32948717" />
-      <window_info anchor="bottom" id="Messages" order="7" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50214595" side_tool="true" weight="0.20242424" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.3260606" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49785408" visible="true" weight="0.24484849" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49785408" visible="true" weight="0.23878787" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1595136" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32948717" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.3272727" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="right" id="Database" order="3" />
-      <window_info anchor="bottom" id="Messages" order="7" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50214595" side_tool="true" weight="0.20242424" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32948717" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49785408" visible="true" weight="0.23878787" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" order="7" />
     </layout>
     <layout-to-restore>
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3260606" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19742489" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32948717" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32948717" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49785408" visible="true" weight="0.24484849" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50214595" side_tool="true" weight="0.20242424" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="10" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Messages" order="11" />
@@ -351,10 +388,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="修改配置文件" />
-    <MESSAGE value="node info debug" />
-    <MESSAGE value="inspect to get gpu topology" />
-    <MESSAGE value="debug: extender ages" />
     <MESSAGE value="request gpu counts bug" />
     <MESSAGE value="build catch get gpu count in pod" />
     <MESSAGE value="allocate gpu found bug" />
@@ -376,86 +409,14 @@
     <MESSAGE value="add image" />
     <MESSAGE value="update kube-scheduler.yaml 3" />
     <MESSAGE value="change too big images" />
-    <option name="LAST_COMMIT_MESSAGE" value="change too big images" />
+    <MESSAGE value="split policy from cache pkg" />
+    <MESSAGE value="fix policy bug in main" />
+    <MESSAGE value="add best policy" />
+    <MESSAGE value="add static policy" />
+    <option name="LAST_COMMIT_MESSAGE" value="add static policy" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/client-go/kubernetes/clientset.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="166">
-          <caret line="406" selection-start-line="406" selection-end-line="406" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/samples/2.yaml" />
-    <entry file="file://$PROJECT_DIR$/samples/3.yaml" />
-    <entry file="file://$PROJECT_DIR$/samples/4.yaml" />
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/routes/pprof.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="33" column="5" selection-start-line="33" selection-start-column="5" selection-end-line="33" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.travis.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="18" selection-start-line="5" selection-start-column="18" selection-end-line="5" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../k8s.io/kubernetes/cmd/kubeadm/app/phases/patchnode/patchnode.go">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vendor/github.com/comail/colog/colog.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="160" column="5" selection-start-line="160" selection-start-column="5" selection-end-line="160" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/go/src/net/http/server.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="3034" column="5" selection-start-line="3034" selection-start-column="5" selection-end-line="3034" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/utils/signals/signal.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="15" column="5" selection-start-line="15" selection-start-column="5" selection-end-line="15" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/api/core/v1/types.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="491">
-          <caret line="4475" column="5" selection-start-line="4475" selection-start-column="5" selection-end-line="4475" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../gpushare-device-plugin/lijj.go" />
-    <entry file="file://$PROJECT_DIR$/demo2.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vendor/k8s.io/client-go/informers/factory.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="57">
-          <caret line="104" column="5" selection-start-line="104" selection-start-column="5" selection-end-line="104" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/gpushare-inspect.go" />
-    <entry file="file://$PROJECT_DIR$/pkg/gpushare/controller.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1140">
-          <caret line="102" column="40" selection-start-line="102" selection-start-column="40" selection-end-line="102" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vendor/k8s.io/client-go/informers/core/v1/pod.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -463,14 +424,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/cache/cache.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1980">
-          <caret line="149" column="23" selection-start-line="149" selection-start-column="23" selection-end-line="149" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/scheduler/inspect.go" />
     <entry file="file://$PROJECT_DIR$/docs/userguide.md">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="125">
@@ -515,21 +468,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/predicate.go" />
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/prioritize.go" />
-    <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go" />
-    <entry file="file://$PROJECT_DIR$/Dockerfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="55" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/utils/node.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="5" selection-start-line="26" selection-start-column="5" selection-end-line="26" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pkg/routes/routes.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1620">
@@ -544,31 +482,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/cache/deviceinfo.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="48" column="33" selection-start-line="48" selection-start-column="33" selection-end-line="48" selection-end-column="33" />
-          <folding>
-            <element signature="e#15#96#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/gpushare-bind.go" />
-    <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-bind.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="33" column="32" selection-start-line="33" selection-start-column="32" selection-end-line="33" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cmd/main.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1095">
-          <caret line="92" column="41" selection-start-line="92" selection-start-column="41" selection-end-line="92" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/bind.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
@@ -584,27 +498,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-predicate.go" />
-    <entry file="file://$PROJECT_DIR$/config/gpu-schd-extender.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="94" column="10" selection-start-line="94" selection-start-column="10" selection-end-line="94" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/kube-scheduler.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/gsoc-scheduler-policy-config.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/samples/docker/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -640,10 +533,229 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pkg/cache/nodeinfo.go">
+    <entry file="file:///usr/local/go/src/flag/flag.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4440">
-          <caret line="315" column="1" selection-start-line="315" selection-start-column="1" selection-end-line="315" selection-end-column="1" />
+        <state relative-caret-position="-9">
+          <caret line="991" column="1" lean-forward="true" selection-start-line="991" selection-start-column="1" selection-end-line="991" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inspect/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#14#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy.go" />
+    <entry file="file://$PROJECT_DIR$/pkg/policy/topology_policy_test.go" />
+    <entry file="file://$PROJECT_DIR$/pkg/gpushare/controller.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="24" lean-forward="true" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/demo1.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/utils/node.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29">
+          <caret line="2" column="7" lean-forward="true" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
+          <folding>
+            <element signature="e#15#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/utils/nodeinfo.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/cache/cache.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
+          <folding>
+            <element signature="e#15#253#0" expanded="true" />
+            <element signature="e#2401#2418#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/utils/nodeinfo.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="186" column="28" lean-forward="true" selection-start-line="186" selection-start-column="28" selection-end-line="186" selection-end-column="28" />
+          <folding>
+            <element signature="e#15#323#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-inspect.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="7" column="26" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-prioritize.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="32" column="43" lean-forward="true" selection-start-line="32" selection-start-column="43" selection-end-line="32" selection-end-column="43" />
+          <folding>
+            <element signature="e#19#369#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmd/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="85" column="5" lean-forward="true" selection-start-line="85" selection-start-column="5" selection-end-line="85" selection-end-column="5" />
+          <folding>
+            <element signature="e#14#659#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/topology_policy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="14" selection-start-column="14" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/scheduler/inspect.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="281">
+          <caret line="42" column="35" selection-start-line="42" selection-start-column="35" selection-end-line="42" selection-end-column="35" />
+          <folding>
+            <element signature="e#19#104#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/utils/deviceinfo.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="21" column="25" selection-start-line="21" selection-start-column="25" selection-end-line="21" selection-end-column="25" />
+          <folding>
+            <element signature="e#15#96#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="5" selection-start-line="1" selection-start-column="5" selection-end-line="1" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/config.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="20" column="5" lean-forward="true" selection-start-line="20" selection-start-column="5" selection-end-line="20" selection-end-column="5" />
+          <folding>
+            <element signature="e#16#168#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/scheduler/gputopology-bind.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="259">
+          <caret line="34" column="29" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+          <folding>
+            <element signature="e#19#366#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/allocate.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4">
+          <caret line="88" column="17" lean-forward="true" selection-start-line="88" selection-start-column="17" selection-end-line="88" selection-end-column="17" />
+          <folding>
+            <element signature="e#16#217#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/besteffort_policy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="28" column="35" selection-start-line="28" selection-start-column="35" selection-end-line="28" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/staticdgx_policy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="383">
+          <caret line="32" column="22" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="22" />
+          <folding>
+            <element signature="e#16#132#0" expanded="true" />
+            <element signature="e#958#978#0" expanded="true" />
+            <element signature="e#1874#1900#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/policy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="33" column="12" lean-forward="true" selection-start-line="33" selection-start-column="12" selection-end-line="33" selection-end-column="12" />
+          <folding>
+            <element signature="e#16#110#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pkg/policy/simple_policy.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+          <folding>
+            <element signature="e#16#109#0" expanded="true" />
+            <element signature="e#333#353#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/gputopology-scheduler-policy-config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="80" lean-forward="true" selection-start-line="9" selection-start-column="49" selection-end-line="9" selection-end-column="80" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/kube-scheduler.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="2" selection-start-line="13" selection-start-column="2" selection-end-line="19" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/gputopology-schd-extender.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="96" column="14" lean-forward="true" selection-start-line="96" selection-start-column="14" selection-end-line="96" selection-end-column="14" />
         </state>
       </provider>
     </entry>
