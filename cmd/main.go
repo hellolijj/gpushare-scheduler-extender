@@ -80,7 +80,7 @@ func main() {
 	if len(schedulerPolicy) == 0 {
 		schedulerPolicy = "simple"
 	}
-	if schedulerPolicy != "simple" || schedulerPolicy != "best_effort" || schedulerPolicy != "static" {
+	if schedulerPolicy != "simple" && schedulerPolicy != "best_effort" && schedulerPolicy != "static" {
 		log.Printf("uninvalid gpu policy %v", schedulerPolicy)
 		return
 	}
