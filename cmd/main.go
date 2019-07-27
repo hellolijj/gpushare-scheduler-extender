@@ -74,8 +74,8 @@ func main() {
 	}
 
 	var schedulerPolicy, config string
-	flag.StringVar(&schedulerPolicy, "-policy", "", "config gpu select policy, , for more detail: https://github.com/hellolijj/")
-	flag.StringVar(&config, "-config", "", "config static node dgx, for more detail: https://github.com/hellolijj/")
+	flag.StringVar(&schedulerPolicy, "policy", "", "config gpu select policy, , for more detail: https://github.com/hellolijj/")
+	flag.StringVar(&config, "config", "", "config static node dgx, for more detail: https://github.com/hellolijj/")
 	flag.Parse()
 	if len(schedulerPolicy) == 0 {
 		schedulerPolicy = "simple"
