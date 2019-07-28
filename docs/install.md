@@ -1,101 +1,206 @@
-# Installation guide
+# gputopology 安装文档
 
-## 0\. Prepare GPU Node
+<a name="JhL1G"></a>
+# 1. 安装 gputopology-device-plugin
 
-This guide assumes that the NVIDIA drivers and nvidia-docker2 have been installed.
+<a name="eA1nV"></a>
+## 1.1 配置容器支持 nvidia-docker
 
-Enable the Nvidia runtime as your default runtime on your node. To do this, please edit the docker daemon config file which is usually present at /etc/docker/daemon.json:
+给每个 node 节点上安装 nividia-docker 安装教程参见[官方文档](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-2.0))。编辑 `/etc/docker/daemon.json` 文件为如下内容：
 
 ```json
 {
-    "default-runtime": "nvidia",
-    "runtimes": {
+   "default-runtime": "nvidia",
+   "runtimes": {
         "nvidia": {
             "path": "/usr/bin/nvidia-container-runtime",
             "runtimeArgs": []
         }
-    }
+    },
+   "registry-mirrors": ["https://cagz8nbe.mirror.aliyuncs.com"]
 }
 ```
 
-> *if `runtimes` is not already present, head to the install page of [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)*
+> 建议也配置阿里云镜像下载加速器。
 
-## 1\. Deploy GPU share scheduler extender
+
+重新加载配置文件
+```bash
+$ systemctl daemon-reload
+$ systemctl restart docker
+```
+
+检查 docker runtime<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562773092661-01701200-756b-425a-8940-8b26fe72db40.png#align=left&display=inline&height=93&name=image.png&originHeight=186&originWidth=954&size=59640&status=done&width=477)
+
+<a name="O3Zai"></a>
+## [](https://www.yuque.com/lijunjun-bjkm9/rwyxlc/quqwog#MKZ6D)1.2 部署 device-plugin 
+
+执行如下命令 部署 device-plugin
 
 ```bash
-cd /etc/kubernetes/
-curl -O https://raw.githubusercontent.com/AliyunContainerService/gpushare-scheduler-extender/master/config/scheduler-policy-config.json
-cd /tmp/
-curl -O https://raw.githubusercontent.com/AliyunContainerService/gpushare-scheduler-extender/master/config/gpushare-schd-extender.yaml
-kubectl create -f gpushare-schd-extender.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/hellolijj/k8s-device-plugin/master/deploy/gsoc-device-plugin.yaml
 ```
 
-## 2\. Modify scheduler configuration
-The goal is to include `/etc/kubernetes/scheduler-policy-config.json` into the scheduler configuration.
-Here is the sample of the modified [kube-scheduler.yaml](../config/kube-scheduler.yaml)
+> ⚠️如果节点上已经安装了 nvidia-plugin 需要先将其删掉。如果是 static pod 部署模式，需要从 /etc/kubernetes/manifest 目录删除部署文件。
 
-### 2.1 Add Policy config file parameter in scheduler arguments
+<a name="sp8Mo"></a>
+## 1.3 给节点打标签使支持gpu topology
 
 ```yaml
-- --policy-config-file=/etc/kubernetes/scheduler-policy-config.json
+$ kubectl label node <target_node> gputopology=true
 ```
 
-### 2.2 Add volume mount into Pod Spec
+<a name="sa3Zz"></a>
+## 1.4 验证 
 
-```yaml
-- mountPath: /etc/kubernetes/scheduler-policy-config.json
-  name: scheduler-policy-config
-  readOnly: true
+```bash
+$ kubectl get pods --all-namespaces -o wide | grep device
 ```
 
+执行以上命令，出现如下情况，则部署成功<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562761440914-7b362d10-b3af-46cb-8dde-a63c2aa192d6.png#align=left&display=inline&height=75&name=image.png&originHeight=150&originWidth=2300&size=88389&status=done&width=1150)
+<a name="DRRfR"></a>
+###
+<a name="SCz2t"></a>
+# 2. 安装 gputopology-scheduele-extender 
+
+<a name="ZgJR2"></a>
+## 2.1 部署 gputopology-scheduler-extender
+
+执行以下命令，部署 gputopology-scheduler-extender
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gpu-schd-extender.yaml
+```
+
+> TODO: extender 类型 deployment 改为 daemonset。或者 replicas 改为 master节点个数。
+
+
+<a name="rWjpe"></a>
+## [](https://www.yuque.com/lijunjun-bjkm9/rwyxlc/quqwog#EJleN)2.2 master 节点上配置 scheduler extender 策略
+编辑 scheduler-extender 配置文件于 /etc/kubernetes/gsoc-scheduler-policy-config.json
+```json
+{
+  "kind": "Policy",
+  "apiVersion": "v1",
+  "priorities": [
+    {"name": "LeastRequestedPriority", "weight": 1},
+    {"name": "BalancedResourceAllocation", "weight": 1},
+    {"name": "ServiceSpreadingPriority", "weight": 1},
+    {"name": "EqualPriority", "weight": 1}
+  ],
+  "extenders": [
+    {
+      "urlPrefix": "http://127.0.0.1:32743/gputopology-scheduler",
+      "PrioritizeVerb": "sort",
+      "weight": 1,
+      "bindVerb":   "bind",
+      "enableHttps": false,
+      "nodeCacheCapable": true,
+      "managedResources": [
+        {
+          "name": "aliyun.com/gpu",
+          "ignoredByScheduler": false
+        }
+      ],
+      "ignorable": false
+    }
+  ]
+}
+```
+或者执行以下命令
+```bash
+$ curl -o /etc/kubernetes/gsoc-scheduler-policy-config.json https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gsoc-scheduler-policy-config.json
+```
+
+
+<a name="8suz0"></a>
+## 2.3 配置 scheduler 参数，重启
+
+编辑 scheuler static pod yaml文件， 重新启动使得 配置文件生效。
+
 ```yaml
-- hostPath:
-      path: /etc/kubernetes/scheduler-policy-config.json
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: null
+  labels:
+    component: kube-scheduler
+    tier: control-plane
+  name: kube-scheduler
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-scheduler
+    - --address=127.0.0.1
+    - --kubeconfig=/etc/kubernetes/scheduler.conf
+    - --leader-elect=true
+    - --policy-config-file=/etc/kubernetes/gsoc-scheduler-policy-config.json
+    - -v=4
+    image: registry-vpc.cn-shanghai.aliyuncs.com/acs/kube-scheduler:v1.12.6-aliyun.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: 127.0.0.1
+        path: /healthz
+        port: 10251
+        scheme: HTTP
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kube-scheduler
+    resources:
+      requests:
+        cpu: 100m
+    volumeMounts:
+    - mountPath: /etc/kubernetes/scheduler.conf
+      name: kubeconfig
+      readOnly: true
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
+      name: scheduler-policy-config
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - hostPath:
+      path: /etc/kubernetes/scheduler.conf
       type: FileOrCreate
-  name: scheduler-policy-config
+    name: kubeconfig
+  - hostPath:
+      path: /etc/kubernetes/gsoc-scheduler-policy-config.json
+      type: FileOrCreate
+    name: scheduler-policy-config
+status: {}
 ```
 
-> Notice: If your Kubernetes default scheduler is deployed as static pod, don't edit the yaml file inside /etc/kubernetes/manifest. You need to edit the yaml file outside the `/etc/kubernetes/manifest` directory.
+> 通过 vim 编辑时，不可在 /etc/kuberntes/manifest 下编辑。可在其他目录下编辑 mv 至此文件夹。
 
-## 3\. Deploy Device Plugin
+
+也可以通过以下命令安装。
+```bash
+  $ curl -o /etc/kubernetes/manifests/kube-scheduler.yaml https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/kube-scheduler.yaml
+```
+
+> 重启 scheduler 的过程，及 配置 scheudler 策略文件需要在每一个 master 节点上执行。
+> ⚠️要保证 每一个master 都部署了 extender 并重启了 scheduler。
+
+<a name="3qith"></a>
+#
+<a name="JTJAy"></a>
+## 2.4 验证
 
 ```bash
-wget https://raw.githubusercontent.com/AliyunContainerService/gpushare-device-plugin/master/device-plugin-rbac.yaml
-kubectl create -f device-plugin-rbac.yaml
-wget https://raw.githubusercontent.com/AliyunContainerService/gpushare-device-plugin/master/device-plugin-ds.yaml
-kubectl create -f device-plugin-ds.yaml
+$ kubectl get pods --all-namespaces | grep cheduler
 ```
 
-> Notice: please remove default GPU device plugin, for example, if you are using [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin/blob/v1.11/nvidia-device-plugin.yml), you can run `kubectl delete ds -n kube-system nvidia-device-plugin-daemonset` to delete.
+执行以上命令，出现如下情况，则部署成功。<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562762437400-9817d044-90ef-445d-8709-e2638b63f1fa.png#align=left&display=inline&height=209&name=image.png&originHeight=418&originWidth=1536&size=254619&status=done&width=768)
 
-## 4\. Add gpushare node labels to the nodes requiring GPU sharing
-
-```bash
-kubectl label node <target_node> gpushare=true
-```
-
-For example:
-
-```bash
-kubectl label no mynode gpushare=true
-```
-
-## 5\. Install Kubectl extension
-
-
-### 5.1 Install kubectl 1.12 or above
-You can download and install `kubectl` for linux
-
-```bash
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.12.1/bin/linux/amd64/kubectl
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/bin/kubectl
-```
-
-### 5.2 Download and install the kubectl extension
-
-```bash
-cd /usr/bin/
-wget https://github.com/AliyunContainerService/gpushare-device-plugin/releases/download/v0.3.0/kubectl-inspect-gpushare
-chmod u+x /usr/bin/kubectl-inspect-gpushare
-```
