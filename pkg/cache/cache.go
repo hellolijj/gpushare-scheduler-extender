@@ -87,6 +87,11 @@ func (cache *SchedulerCache) BuildCache() error {
 			if !utils.IsGPUTopologyNode(node) {
 				continue
 			}
+			_, ok := cache.nodes[node.Name]
+			if ok {
+				continue
+			}
+			
 			cache.nodes[node.Name] = gputype.NewNodeInfo(node)
 		}
 		
