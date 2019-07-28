@@ -2,8 +2,7 @@ package policy
 
 import (
 	"fmt"
-
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	gputype "github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 
 )
 
@@ -14,7 +13,7 @@ func NewStaticRunner() Run {
 	return &staticRunner{}
 }
 
-func (s *staticRunner) Score(n *utils.NodeInfo, req int) (int, error) {
+func (s *staticRunner) Score(n *gputype.NodeInfo, req int) (int, error) {
 	ids, _, err := s.PreAllocate(n, req)
 	if err != nil || len(ids) == 0{
 		return 0, err
@@ -24,13 +23,13 @@ func (s *staticRunner) Score(n *utils.NodeInfo, req int) (int, error) {
 	return 10, nil
 }
 
-func (s *staticRunner) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
+func (s *staticRunner) Allocate(n *gputype.NodeInfo, req int) ([]int, error) {
 	ids, _, err := s.PreAllocate(n, req)
 	return ids, err
 }
 
 // PreAllocate 计算分配方案，及该方案的打分
-func (s *staticRunner) PreAllocate(n *utils.NodeInfo, req int) (ids []int, score int, err error) {
+func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, score int, err error) {
 	availableGPUs := n.GetAvailableGPUs()
 	if req <= 0 || req > availableGPUs {
 		err = fmt.Errorf("rqu gpu count %v is invalid", req)

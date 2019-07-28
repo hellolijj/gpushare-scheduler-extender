@@ -1,15 +1,15 @@
 package scheduler
 
 import (
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
-func (in Inspect) Handler(name string) *Result {
-	nodes := []*Node{}
+func (in Inspect) Handler(name string) *types.InspectResult {
+	nodes := []*types.InspectNode{}
 	errMsg := ""
 	
 	if len(name) == 0 {
-		nodeInfos := in.cache.GetNodeinfos()
+		nodeInfos := in.cache.ListNodeInfo()
 		for _, info := range nodeInfos {
 			nodes = append(nodes, buildNode(info))
 		}
@@ -25,13 +25,13 @@ func (in Inspect) Handler(name string) *Result {
 		nodes = append(nodes, buildNode(node))
 	}
 	
-	return &Result{
+	return &types.InspectResult{
 		Nodes: nodes,
 		Error: errMsg,
 	}
 }
 
-func buildNode(info *utils.NodeInfo) *Node {
+func buildNode(info *types.NodeInfo) *types.InspectNode {
 	
 	topology := info.GetGPUTopology()
 	
@@ -48,7 +48,7 @@ func buildNode(info *utils.NodeInfo) *Node {
 		}
 	}
 	
-	return &Node{
+	return &types.InspectNode{
 		Name:     info.GetName(),
 		TotalGPU: info.GetGPUCount(),
 		UsedGPU	: info.GetGPUUsedCount(),

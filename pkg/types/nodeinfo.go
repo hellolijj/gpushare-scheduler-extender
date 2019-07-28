@@ -1,4 +1,4 @@
-package utils
+package types
 
 import (
 	"log"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 	"k8s.io/api/core/v1"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 )
 
 const (
@@ -38,7 +39,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 	log.Printf("debug: NewNodeInfo() creates nodeInfo for %s", node.Name)
 
 	devMap := map[int]*DeviceInfo{}
-	for i := 0; i < GetGPUCountInNode(node); i++ {
+	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
 		devMap[i] = newDeviceInfo(i)
 	}
 
@@ -48,7 +49,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 		name:        node.Name,
 		node:        node,
 		devs:        devMap,
-		gpuCount:    GetGPUCountInNode(node),
+		gpuCount:    utils.GetGPUCountInNode(node),
 		gpuTopology: gpuTopology,
 
 		rwmu: new(sync.RWMutex),
@@ -64,7 +65,7 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 	// init gpuTopology
 	topology := make([][]TopologyType, len(devs))
 
-	if !IsGPUTopologyNode(node) {
+	if !utils.IsGPUTopologyNode(node) {
 		return topology
 	}
 
@@ -74,7 +75,7 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 
 	log.Printf("debug: node %s has annotation %v", node.Name, node.Annotations)
 
-	gpuTopology, ok := node.Annotations[EnvGPUAnnotation]
+	gpuTopology, ok := node.Annotations[utils.EnvGPUAnnotation]
 	if !ok {
 		return topology
 	}
@@ -110,8 +111,8 @@ func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]Topolog
 		}
 
 		log.Printf("debug: from annotaion %s to get gputoplogy gpu%d and gpu%d 's relations is desc: %s abbr: %s", k, gpu1, gpu2, v, topoAbbr)
-		topology[gpu1][gpu2] = TopologyType(GetGPULinkFromDescAndAbbr(topoAbbr))
-		topology[gpu2][gpu1] = TopologyType(GetGPULinkFromDescAndAbbr(topoAbbr))
+		topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
+		topology[gpu2][gpu1] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
 	}
 
 	return topology
@@ -151,7 +152,7 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) {
 	n.rwmu.Lock()
 	defer n.rwmu.Unlock()
 
-	ids := GetGPUIDFromAnnotation(pod)
+	ids := utils.GetGPUIDFromAnnotation(pod)
 	log.Printf("warn: Pod remove ids %v", ids)
 	for _, id := range ids {
 		if id >= 0 {
@@ -172,7 +173,7 @@ func (n *NodeInfo) AddOrUpdatePod(pod *v1.Pod) (added bool) {
 	n.rwmu.Lock()
 	defer n.rwmu.Unlock()
 
-	ids := GetGPUIDFromAnnotation(pod)
+	ids := utils.GetGPUIDFromAnnotation(pod)
 	log.Printf("debug: addOrUpdatePod() Pod %s in ns %s with the GPU IDs %v should be added to device map",
 		pod.Name,
 		pod.Namespace,
@@ -201,7 +202,7 @@ func (n *NodeInfo) Assume(pod *v1.Pod) (allocatable bool) {
 	defer n.rwmu.RUnlock()
 
 	availableGPUs := n.GetAvailableGPUs()
-	reqGPU := GetGPUCountFromPodResource(pod)
+	reqGPU := utils.GetGPUCountFromPodResource(pod)
 	log.Printf("debug: AvailableGPUs: %v in node %s", availableGPUs, n.name)
 	log.Printf("debug: requestGPUs: %v in node %s", reqGPU, n.name)
 

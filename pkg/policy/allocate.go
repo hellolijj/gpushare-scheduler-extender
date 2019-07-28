@@ -5,12 +5,13 @@ import (
 	"log"
 	
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func (p Policy) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod, n *utils.NodeInfo) (err error) {
+func (p Policy) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod, n *types.NodeInfo) (err error) {
 	var newPod *v1.Pod
 	p.rwmu.Lock()
 	defer p.rwmu.Unlock()
@@ -24,7 +25,7 @@ func (p Policy) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod, n *utils.
 		_, err = clientset.CoreV1().Pods(newPod.Namespace).Update(newPod)
 		if err != nil {
 			// the object has been modified; please apply your changes to the latest version and try again
-			if err.Error() == utils.OptimisticLockErrorMsg {
+			if err.Error() == types.OptimisticLockErrorMsg {
 				// retry
 				pod, err = clientset.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
 				if err != nil {
@@ -84,7 +85,7 @@ func (p Policy) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod, n *utils.
 }
 
 
-func (p Policy) allocateGPUID(pod *v1.Pod, n *utils.NodeInfo) (candidateDevID []uint, found bool) {
+func (p Policy) allocateGPUID(pod *v1.Pod, n *types.NodeInfo) (candidateDevID []uint, found bool) {
 	reqGPU := 0
 	found = false
 	availableGPUs := n.GetAvailableGPUs()

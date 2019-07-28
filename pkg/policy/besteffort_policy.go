@@ -2,7 +2,7 @@ package policy
 
 import (
 	"fmt"
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
 type bestRunner struct{}
@@ -13,18 +13,18 @@ func NewBestRunner() Run {
 
 
 // Allocate GPUs following a simple policy.
-func (b *bestRunner) Score(n *utils.NodeInfo, req int) (int, error) {
+func (b *bestRunner) Score(n *types.NodeInfo, req int) (int, error) {
 	_, score, err := b.PreAllocate(n, req)
 	return score, err
 }
 
-func (b *bestRunner) Allocate(n *utils.NodeInfo, req int) ([]int, error) {
+func (b *bestRunner) Allocate(n *types.NodeInfo, req int) ([]int, error) {
 	ids, _, err := b.PreAllocate(n, req)
 	return ids, err
 }
 
 // bestRunner 计算分配方案，及该方案的打分
-func (b *bestRunner) PreAllocate(n *utils.NodeInfo, req int) (ids []int, score int, err error) {
+func (b *bestRunner) PreAllocate(n *types.NodeInfo, req int) (ids []int, score int, err error) {
 	availableGPUs := n.GetAvailableGPUs()
 	if req <= 0 || req > availableGPUs {
 		err = fmt.Errorf("rqu gpu count %v is invalid", req)
@@ -196,7 +196,7 @@ func gpuSetContains(gpuSet []int, gpu int) bool {
 
 // Get the total score of a set of GPUs. The score is calculated as the sum of
 // the scores calculated for each pair of GPUs in the set.
-func calculateGPUSetScore(n *utils.NodeInfo, gpuSet []int) int {
+func calculateGPUSetScore(n *types.NodeInfo, gpuSet []int) int {
 	score := 0
 	
 	iterateGPUSets(gpuSet, 2, func(gpus []int) {
@@ -208,7 +208,7 @@ func calculateGPUSetScore(n *utils.NodeInfo, gpuSet []int) int {
 
 // Get the total score of a GPU partition. The score is calculated as the sum
 // of the scores calculated for each set of GPUs within the partition.
-func calculateGPUPartitionScore(n *utils.NodeInfo, gpuPartition [][]int) int {
+func calculateGPUPartitionScore(n *types.NodeInfo, gpuPartition [][]int) int {
 	score := 0
 	
 	for _, gpuSet := range gpuPartition {

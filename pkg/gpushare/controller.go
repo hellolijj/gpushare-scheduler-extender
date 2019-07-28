@@ -3,9 +3,11 @@ package gpushare
 import (
 	"fmt"
 	"time"
+	"log"
 
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -15,9 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	clientgocache "k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-
-	"log"
-
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
@@ -119,12 +118,6 @@ func NewController(clientset *kubernetes.Clientset, kubeInformerFactory kubeinfo
 		return nil, fmt.Errorf("failed to wait for node caches to sync")
 	} else {
 		log.Println("info: init the node cache successfully")
-	}
-
-	if ok := clientgocache.WaitForCacheSync(stopCh, c.podInformerSynced); !ok {
-		return nil, fmt.Errorf("failed to wait for pod caches to sync")
-	} else {
-		log.Println("info: init the pod cache successfully")
 	}
 
 	log.Println("info: end to wait for cache")

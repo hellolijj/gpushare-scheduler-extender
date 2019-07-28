@@ -3,9 +3,11 @@ package cache
 import (
 	"log"
 	"sync"
-
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	"k8s.io/api/core/v1"
+	
+	
+	gputype "github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	corelisters "k8s.io/client-go/listers/core/v1"
@@ -14,7 +16,7 @@ import (
 type SchedulerCache struct {
 
 	// a map from pod key to podState.
-	nodes map[string]*utils.NodeInfo
+	nodes map[string]*gputype.NodeInfo
 
 	// nodeLister can list/get nodes from the shared informer's store.
 	nodeLister corelisters.NodeLister
@@ -29,7 +31,7 @@ type SchedulerCache struct {
 
 func NewSchedulerCache(nLister corelisters.NodeLister, pLister corelisters.PodLister) *SchedulerCache {
 	return &SchedulerCache{
-		nodes:      make(map[string]*utils.NodeInfo),
+		nodes:      make(map[string]*gputype.NodeInfo),
 		nodeLister: nLister,
 		podLister:  pLister,
 		knownPods:  make(map[types.UID]*v1.Pod),
@@ -37,9 +39,9 @@ func NewSchedulerCache(nLister corelisters.NodeLister, pLister corelisters.PodLi
 	}
 }
 
-func (cache *SchedulerCache) GetNodeinfos() []*utils.NodeInfo {
-	nodes := []*utils.NodeInfo{}
-	log.Println("debug: get nodes info %v", cache.nodes)
+func (cache *SchedulerCache) ListNodeInfo() []*gputype.NodeInfo {
+	nodes := []*gputype.NodeInfo{}
+	log.Println("debug:list nodes info %v", cache.nodes)
 	for _, n := range cache.nodes {
 		nodes = append(nodes, n)
 	}
@@ -129,7 +131,7 @@ func (cache *SchedulerCache) RemovePod(pod *v1.Pod) {
 }
 
 // Get or build nodeInfo if it doesn't exist
-func (cache *SchedulerCache) GetNodeInfo(name string) (*utils.NodeInfo, error) {
+func (cache *SchedulerCache) GetNodeInfo(name string) (*gputype.NodeInfo, error) {
 	node, err := cache.nodeLister.Get(name)
 	if err != nil {
 		return nil, err
@@ -142,7 +144,7 @@ func (cache *SchedulerCache) GetNodeInfo(name string) (*utils.NodeInfo, error) {
 	n, ok := cache.nodes[name]
 
 	if !ok {
-		n = utils.NewNodeInfo(node)
+		n = gputype.NewNodeInfo(node)
 		cache.nodes[name] = n
 	} else {
 		// if the existing node turn from non gpu to gpu
@@ -151,7 +153,7 @@ func (cache *SchedulerCache) GetNodeInfo(name string) (*utils.NodeInfo, error) {
 				name,
 				n.GetNode(),
 				node)
-			n = utils.NewNodeInfo(node)
+			n = gputype.NewNodeInfo(node)
 			cache.nodes[name] = n
 		}
 

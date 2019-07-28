@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/scheduler"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
 func main() {
@@ -28,13 +28,27 @@ func main() {
 		fmt.Printf("Failed due to %v", err)
 		os.Exit(1)
 	}
-	fmt.Println(inspect)
-
+	if len(inspect.Error) > 0 {
+		fmt.Println(inspect.Error)
+		os.Exit(1)
+	}
+	if len(inspect.Nodes) == 0 {
+		fmt.Println("no node in inspct")
+		os.Exit(1)
+	}
+	
+	for _, node := range inspect.Nodes {
+		fmt.Println(node.Name)
+		fmt.Println(node.TotalGPU)
+		fmt.Println(node.UsedGPU)
+		fmt.Println(node.Topology)
+	}
+	
 	// todo display result
 
 }
 
-func fetchNode(node string, detail bool) (*scheduler.Result, error) {
+func fetchNode(node string, detail bool) (*types.InspectResult, error) {
 	url := "http://127.0.0.1:32743/gputopology-scheduler/inspect"
 	if len(node) != 0 {
 		url += "/" + node
@@ -55,9 +69,12 @@ func fetchNode(node string, detail bool) (*scheduler.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var inspectResult scheduler.Result
+	
+	fmt.Println(string(rawData))
+	
+	var inspectResult types.InspectResult
 	err = json.Unmarshal(rawData, &inspectResult)
+
 	if err != nil {
 		return nil, err
 	}

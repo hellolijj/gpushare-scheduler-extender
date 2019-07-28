@@ -3,8 +3,8 @@ package policy
 import (
 	"sync"
 
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
 	"fmt"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
 type Policy struct {
@@ -53,11 +53,11 @@ func (s *Scheduler) Allocate(request int) ([]int, error) {
 */
 
 type Run interface {
-	Score(n *utils.NodeInfo, req int) (int, error)
-	Allocate(n *utils.NodeInfo, req int) ([]int, error)
+	Score(n *types.NodeInfo, req int) (int, error)
+	Allocate(n *types.NodeInfo, req int) ([]int, error)
 }
 
-func (p *Policy)Score(n *utils.NodeInfo, req int) (int, error) {
+func (p *Policy)Score(n *types.NodeInfo, req int) (int, error) {
 	p.rwmu.Lock()
 	defer p.rwmu.Unlock()
 	return p.Run.Score(n, req)

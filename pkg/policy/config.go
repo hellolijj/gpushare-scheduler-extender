@@ -3,13 +3,14 @@ package policy
 import (
 	"log"
 
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
 
 // 计算两块 gpu 之间的分数
-func calculateGPUPairScore(n *utils.NodeInfo, gpu0 int, gpu1 int) int {
+func calculateGPUPairScore(n *types.NodeInfo, gpu0 int, gpu1 int) int {
 	if gpu0 < 0 || gpu0 > len(n.GetDevs())-1 || gpu1 < 0 || gpu1 > len(n.GetDevs())-1 {
 		log.Printf("invaild gpu pair format %d-%d", gpu0, gpu1)
 		return 0
