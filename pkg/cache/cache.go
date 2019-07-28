@@ -50,7 +50,7 @@ func (cache *SchedulerCache) ListNodeInfo() []*gputype.NodeInfo {
 
 // build cache when initializing
 func (cache *SchedulerCache) BuildCache() error {
-	log.Println("debug: begin to build scheduler cache")
+	log.Println("debug: begin to build scheduler pod cache")
 	pods, err := cache.podLister.List(labels.Everything())
 
 	if err != nil {
@@ -72,6 +72,24 @@ func (cache *SchedulerCache) BuildCache() error {
 			}
 		}
 
+	}
+	
+	log.Println("debug: begin to build scheduler node cache")
+	nodes, err := cache.nodeLister.List(labels.Everything())
+	
+	if err != nil {
+		return err
+	} else {
+		for _, node := range nodes {
+			if len(node.Name) == 0 {
+				continue
+			}
+			if !utils.IsGPUTopologyNode(node) {
+				continue
+			}
+			cache.nodes[node.Name] = gputype.NewNodeInfo(node)
+		}
+		
 	}
 
 	return nil
