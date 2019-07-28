@@ -36,7 +36,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		return nil, 0, err
 	}
 
-	validSets := ValidSets()
+	validSets := NodeTypeConfig()
 	
 	devices := []int{}
 	for _, dev := range n.GetDevs() {

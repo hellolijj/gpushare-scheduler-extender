@@ -20,13 +20,12 @@ func GetGPUCountInNode(node *v1.Node) int {
 	return int(val.Value())
 }
 
-
 // 获取 annotation 上的node
 func GetNodeTypeFromAnnotation(node *v1.Node) string {
 	nodeType, ok := node.Annotations[EnvNodeType]
 	if !ok {
 		return ""
 	}
-	
+
 	return nodeType
 }
