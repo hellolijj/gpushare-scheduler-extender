@@ -94,7 +94,6 @@ func (cache *SchedulerCache) BuildCache() error {
 			
 			cache.nodes[node.Name] = gputype.NewNodeInfo(node)
 		}
-		
 	}
 
 	return nil

@@ -7,6 +7,9 @@ import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
+// 可以优化指定指定策略
+type GPUPolicy string
+
 type Policy struct {
 	name   string
 	config string
@@ -61,4 +64,8 @@ func (p *Policy)Score(n *types.NodeInfo, req int) (int, error) {
 	p.rwmu.Lock()
 	defer p.rwmu.Unlock()
 	return p.Run.Score(n, req)
+}
+
+func (p *Policy) GetName() string {
+	return p.name
 }

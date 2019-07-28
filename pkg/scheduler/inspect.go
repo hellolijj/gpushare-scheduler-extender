@@ -4,14 +4,14 @@ import (
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 )
 
-func (in Inspect) Handler(name string) *types.InspectResult {
+func (in Inspect) Handler(name string, detail bool) *types.InspectResult {
 	nodes := []*types.InspectNode{}
 	errMsg := ""
 	
 	if len(name) == 0 {
 		nodeInfos := in.cache.ListNodeInfo()
 		for _, info := range nodeInfos {
-			nodes = append(nodes, buildNode(info))
+			nodes = append(nodes, in.buildNode(info, detail))
 		}
 		
 	} else {
@@ -22,7 +22,7 @@ func (in Inspect) Handler(name string) *types.InspectResult {
 		if len(node.GetName()) == 0 {
 			errMsg = "invalid node name"
 		}
-		nodes = append(nodes, buildNode(node))
+		nodes = append(nodes, in.buildNode(node, detail))
 	}
 	
 	return &types.InspectResult{
@@ -31,10 +31,18 @@ func (in Inspect) Handler(name string) *types.InspectResult {
 	}
 }
 
-func buildNode(info *types.NodeInfo) *types.InspectNode {
+func (in Inspect) buildNode(info *types.NodeInfo, detail bool) *types.InspectNode {
+	if !detail {
+		return &types.InspectNode{
+			Name:     info.GetName(),
+			TotalGPU: info.GetGPUCount(),
+			UsedGPU	: info.GetGPUUsedCount(),
+		}
+	}
+	
+	policyName := in.policy.GetName()
 	
 	topology := info.GetGPUTopology()
-	
 	for _, dev := range info.GetDevs() {
 		if dev.IsUsed() {
 			// 所有与devid相关的拓扑都为-1
@@ -48,10 +56,17 @@ func buildNode(info *types.NodeInfo) *types.InspectNode {
 		}
 	}
 	
-	return &types.InspectNode{
-		Name:     info.GetName(),
-		TotalGPU: info.GetGPUCount(),
-		UsedGPU	: info.GetGPUUsedCount(),
-		Topology: topology,
+	// to get static config
+	// staticSet := policy.NodeTypeConfig()[utils.GetNodeTypeFromAnnotation(info.GetNode())]
+	
+	if policyName == "simple" || policyName == "best_effort" {
+		return &types.InspectNode{
+			Name:     info.GetName(),
+			TotalGPU: info.GetGPUCount(),
+			UsedGPU	: info.GetGPUUsedCount(),
+			Topology: topology,
+		}
 	}
+	
+	return nil
 }

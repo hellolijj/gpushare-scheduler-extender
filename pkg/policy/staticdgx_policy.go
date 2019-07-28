@@ -36,13 +36,8 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		return nil, 0, err
 	}
 
-	validSets := map[int][][]int{
-		1: {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}},
-		2: {{0, 2}, {1, 3}, {4, 6}, {5, 7}},
-		4: {{0, 1, 2, 3}, {4, 5, 6, 7}},
-		8: {{0, 1, 2, 3, 4, 5, 6, 7}},
-	}
-
+	validSets := ValidSets()
+	
 	devices := []int{}
 	for _, dev := range n.GetDevs() {
 		if dev.IsUsed() == false {
@@ -50,7 +45,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		}
 	}
 
-	res := findGPUSet(devices, req, validSets[req])
+	res := findGPUSet(devices, req, validSets["shenglong"][req])
 	if len(res) > 0 {
 		return res, 10, nil
 	}
@@ -80,4 +75,25 @@ func findGPUSet(devices []int, size int, validSets [][]int) []int {
 	}
 
 	return solutionSet
+}
+
+func NodeTypeConfig() map[string]map[int][][]int {
+	
+	validSets := make(map[string]map[int][][]int)
+	
+	shenglongValidConfig := map[int][][]int{
+		1: {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}},
+		2: {{0, 2}, {1, 3}, {4, 6}, {5, 7}},
+		4: {{0, 1, 2, 3}, {4, 5, 6, 7}},
+		8: {{0, 1, 2, 3, 4, 5, 6, 7}},
+	}
+	
+	validSets["shenglong"] = shenglongValidConfig
+	
+	return validSets
+}
+
+// 从配置文件中加载 node type 配置
+func loadNodeTypeConfig() {
+
 }

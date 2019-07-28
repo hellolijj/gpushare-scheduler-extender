@@ -20,28 +20,12 @@ func GetGPUCountInNode(node *v1.Node) int {
 	return int(val.Value())
 }
 
-type NodeType int
-// Valid GPUTypes
-const (
-	UnknownNodeType NodeType = iota
-	ShenLongNode
-)
 
-var (
-	NodeTypeMap  = map[string]NodeType{
-		NodeTypeSHENGLONG: ShenLongNode,
-	}
-)
-// 分装节点烈性
-func GetNodeTypeFromAnnotation(node *v1.Node) NodeType {
-	nodeTypeKey, ok := node.Annotations[EnvNodeType]
+// 获取 annotation 上的node
+func GetNodeTypeFromAnnotation(node *v1.Node) string {
+	nodeType, ok := node.Annotations[EnvNodeType]
 	if !ok {
-		return UnknownNodeType
-	}
-	
-	nodeType, ok := NodeTypeMap[nodeTypeKey]
-	if !ok {
-		return UnknownNodeType
+		return ""
 	}
 	
 	return nodeType

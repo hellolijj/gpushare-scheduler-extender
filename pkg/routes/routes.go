@@ -126,7 +126,14 @@ func BindRoute(bind *scheduler.Bind) httprouter.Handle {
 
 func InspectRoute(inspect *scheduler.Inspect) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		result := inspect.Handler(ps.ByName("nodename"))
+		vars := r.URL.Query()
+		detail := false
+		a, ok := vars["detail"]
+		if ok && len(a) > 0 && a[0] == "true" {
+			detail = true
+		}
+		
+		result := inspect.Handler(ps.ByName("nodename"), detail)
 		
 		if resultBody, err := json.Marshal(result); err != nil {
 			// panic(err)

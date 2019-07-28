@@ -110,7 +110,7 @@ func main() {
 
 	gpuTopologyPrioritize := scheduler.NewGPUTopologyPrioritize(clientset, controller.GetSchedulerCache(), policy)
 	gpuTopologyBind := scheduler.NewGPUShareBind(clientset, controller.GetSchedulerCache(), policy)
-	gpuTopologyInspect := scheduler.NewGPUTopologyInspect(controller.GetSchedulerCache())
+	gpuTopologyInspect := scheduler.NewGPUTopologyInspect(controller.GetSchedulerCache(), policy)
 
 	router := httprouter.New()
 
