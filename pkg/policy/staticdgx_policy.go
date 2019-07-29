@@ -71,16 +71,20 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		log.Printf("warn: no avaliable gpu config %v for node type %s", validSet, nodeType)
 	}
 	log.Printf("debug: get valid set: %v", validSet)
+	log.Printf("debug: get devices: %v", devices)
 	
 	// 1. 找到与配置文件相同策略20分
 	validGpuSets, ok := validSet[req]
 	if ok {
+		log.Printf("debug: get validGpuSets %v", validGpuSets)
 		for _, validGpuSet := range validGpuSets {
-			if isChinldSet(validGpuSet, devices) {
+			if isSubInSet(validGpuSet, devices) {
 				log.Printf("info: select a 20 score policy %v", validGpuSet)
 				return validGpuSet, 20, nil
 			}
 		}
+	} else {
+		log.Println("debug: unable to get validGpuSets")
 	}
 	
 	// 2. 以req=3为例， req++, 如果找到 req+ 的配置策略 并且可分配，15分
@@ -90,7 +94,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		validGpuSets, ok := validSet[virtualReq]
 		if ok {
 			for _, validGpuSet := range validGpuSets {
-				if isChinldSet(validGpuSet, devices) {
+				if isSubInSet(validGpuSet, devices) {
 					// 从 vailidGpuSet 中随机选择
 					log.Printf("info: select a 15 score policy %v", validGpuSet[:req])
 					return validGpuSet[:req], 15, nil
@@ -132,16 +136,31 @@ func loadNodeTypeConfig(path string) (map[string]map[int][][]int, error) {
 }
 
 // child is shorter than parent
-func isChinldSet(child, parent []int) bool {
+// whether child
+func isSubInSet(child, parent []int) bool {
 	sort.Ints(child)
 	sort.Ints(parent)
+	log.Printf("debug: chind %v parent %v", child, parent)
 	if len(child) > len(parent) {
 		return false
 	}
 	for i := 0; i < len(child); i++ {
-		if child[i] != parent[i] {
+		if !isNInSet(child[i], parent) {
 			return false
 		}
 	}
 	return true
+}
+
+// 判断 元素 n 是否存在于 set 中
+func isNInSet(n int, s []int) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, v := range s {
+		if v == n {
+			return true
+		}
+	}
+	return false
 }
