@@ -55,6 +55,7 @@ func (in Inspect) buildNode(info *types.NodeInfo, detail bool) *types.InspectNod
 	policyName := in.policy.GetName()
 	
 	topology := info.GetGPUTopology()
+	log.Printf("debug: inspect origin topology: %v", topology)
 	for _, dev := range info.GetDevs() {
 		if dev.IsUsed() {
 			// 所有与devid相关的拓扑都为-1
