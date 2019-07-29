@@ -62,8 +62,6 @@ func fetchNode(node string, detail bool) (*types.InspectResult, error) {
 		return nil, err
 	}
 	
-	fmt.Println(string(rawData))
-	
 	var inspectResult types.InspectResult
 	err = json.Unmarshal(rawData, &inspectResult)
 
