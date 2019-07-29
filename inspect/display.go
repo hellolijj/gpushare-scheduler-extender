@@ -45,7 +45,7 @@ func displayDetails(res *types.InspectResult) {
 	var bufferPolicy bytes.Buffer
 	bufferPolicy.WriteString(fmt.Sprintf("gpu policy: %s\n", res.Policy))
 	fmt.Fprintf(w, bufferPolicy.String())
-	fmt.Fprintln(w, "---------------------------------")
+	fmt.Fprintln(w, "----------------------------------------")
 	
 	
 	// print content
@@ -80,7 +80,7 @@ func displayDetails(res *types.InspectResult) {
 					if node.Topology[i][j] == 0 {
 						bufferContent.WriteString(fmt.Sprintf("%5s", "X"))
 					} else {
-						bufferContent.WriteString(fmt.Sprintf("%5d", node.Topology[i][j]))
+						bufferContent.WriteString(fmt.Sprintf("%5d", node.Topology[i][j].Abbr()))
 					}
 					
 				}
@@ -90,7 +90,7 @@ func displayDetails(res *types.InspectResult) {
 		
 		
 		if i < len(res.Nodes)-1 {
-			fmt.Fprintln(w, "---------------------------------")
+			bufferContent.WriteString("----------------------------------------\n")
 		}
 		fmt.Fprintf(w, bufferContent.String())
 	}

@@ -19,6 +19,21 @@ var (
 		"NV5": 11,
 		"NV6": 12,
 	}
+	gpuAbbr = map[nvml.P2PLinkType]string{
+		1: "PSB",
+		2: "PIX",
+		3: "PXB",
+		4: "PHB" ,
+		5: "NODE",
+		6: "SYS",
+		7: "NV1",
+		8: "NV2",
+		9: "NV3",
+		10: "NV4",
+		11: "NV5",
+		12: "NV6",
+		
+	}
 )
 
 func GetGPULinkFromDescAndAbbr(abbr string) nvml.P2PLinkType {
@@ -27,4 +42,12 @@ func GetGPULinkFromDescAndAbbr(abbr string) nvml.P2PLinkType {
 		return 0
 	}
 	return abbrKey
+}
+
+func GetGPUAbbr(linkType nvml.P2PLinkType) string {
+	abbr, ok := gpuAbbr[linkType]
+	if !ok {
+		return ""
+	}
+	return abbr
 }

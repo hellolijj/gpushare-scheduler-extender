@@ -34,6 +34,10 @@ func (t TopologyType) Desc() string {
 	return nvml.P2PLinkType(t).String()
 }
 
+func (t TopologyType) Abbr() string {
+	return utils.GetGPUAbbr(nvml.P2PLinkType(t))
+}
+
 // Create Node Level
 func NewNodeInfo(node *v1.Node) *NodeInfo {
 	log.Printf("debug: NewNodeInfo() creates nodeInfo for %s", node.Name)
