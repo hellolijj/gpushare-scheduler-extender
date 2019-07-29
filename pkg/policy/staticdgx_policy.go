@@ -61,6 +61,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 	}
 	
 	nodeConfig, err := loadNodeTypeConfig(s.configPath)
+	log.Printf("debug: get nodeconfig: %v", nodeConfig)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -69,12 +70,14 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 	if !ok {
 		log.Printf("warn: no avaliable gpu config %v for node type %s", validSet, nodeType)
 	}
+	log.Printf("debug: get valid set: %v", validSet)
 	
 	// 1. 找到与配置文件相同策略20分
 	validGpuSets, ok := validSet[req]
 	if ok {
 		for _, validGpuSet := range validGpuSets {
 			if isChinldSet(validGpuSet, devices) {
+				log.Printf("info: select a 20 score policy %v", validGpuSet)
 				return validGpuSet, 20, nil
 			}
 		}
@@ -89,7 +92,8 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 			for _, validGpuSet := range validGpuSets {
 				if isChinldSet(validGpuSet, devices) {
 					// 从 vailidGpuSet 中随机选择
-					return validGpuSet[0: req], 15, nil
+					log.Printf("info: select a 15 score policy %v", validGpuSet[:req])
+					return validGpuSet[:req], 15, nil
 				}
 			}
 		}
@@ -99,7 +103,8 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 	}
 	
 	// 3. 随机选择
-	return devices[0: req], 10, fmt.Errorf("no is invalid gpu")
+	log.Printf("info: choose a random schem %v", devices[:req])
+	return devices[:req], 10, fmt.Errorf("no is invalid gpu")
 }
 
 
