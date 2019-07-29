@@ -27,6 +27,7 @@ func (in Inspect) Handler(name string, detail bool) *types.InspectResult {
 	
 	return &types.InspectResult{
 		Nodes: nodes,
+		Policy: in.policy.GetName(),
 		Error: errMsg,
 	}
 }

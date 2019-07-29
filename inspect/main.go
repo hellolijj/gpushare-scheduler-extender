@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -37,7 +36,12 @@ func main() {
 		os.Exit(1)
 	}
 	
-	display(inspect.Nodes)
+	if *details {
+		displayDetails(inspect)
+		os.Exit(0)
+	}
+	
+	displaySummary(inspect.Nodes)
 }
 
 func fetchNode(node string, detail bool) (*types.InspectResult, error) {
@@ -68,8 +72,6 @@ func fetchNode(node string, detail bool) (*types.InspectResult, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("log: fetch node %v to inspect node info %v", node, inspectResult)
 
 	return &inspectResult, nil
 }

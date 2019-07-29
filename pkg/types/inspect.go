@@ -7,6 +7,7 @@ package types
 type InspectResult struct {
 	Nodes []*InspectNode `json:"nodes"`
 	Error string  `json:"error,omitempty"`
+	Policy string `json:policy,omitempty`
 }
 
 type InspectNode struct {
