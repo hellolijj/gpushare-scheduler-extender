@@ -37,15 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 	
-	for _, node := range inspect.Nodes {
-		fmt.Println(node.Name)
-		fmt.Println(node.TotalGPU)
-		fmt.Println(node.UsedGPU)
-		fmt.Println(node.Topology)
-	}
-	
-	// todo display result
-
+	display(inspect.Nodes)
 }
 
 func fetchNode(node string, detail bool) (*types.InspectResult, error) {
