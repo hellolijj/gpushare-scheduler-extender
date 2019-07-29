@@ -97,11 +97,22 @@ spec:
             - gputopology-schd-extender
             - -policy
             - best_effort
+            - config
+            - /etc/kubernetes/static-node.json
           env:
           - name: LOG_LEVEL
             value: debug
           - name: PORT
             value: "12345"
+          volumeMounts:
+          - mountPath: /etc/kubernetes/static-node.json
+            name: static-config
+            readOnly: true
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/static-node.json
+          type: FileOrCreate
+        name: static-config
 
 # service.yaml
 ---
