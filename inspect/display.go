@@ -64,7 +64,7 @@ func displayDetails(res *types.InspectResult) {
 		
 		// print topology
 		if node.Topology != nil {
-			bufferContent.WriteString(fmt.Sprintln("gpu topolocy"))
+			bufferContent.WriteString(fmt.Sprintln("gpu topolocy:"))
 			numGpus := len(node.Topology)
 			
 			// print topology header line
@@ -80,7 +80,7 @@ func displayDetails(res *types.InspectResult) {
 					if node.Topology[i][j] == 0 {
 						bufferContent.WriteString(fmt.Sprintf("%5s", "X"))
 					} else {
-						bufferContent.WriteString(fmt.Sprintf("%5d", node.Topology[i][j].Abbr()))
+						bufferContent.WriteString(fmt.Sprintf("%5s", node.Topology[i][j].Abbr()))
 					}
 					
 				}

@@ -1,8 +1,17 @@
 package scheduler
 
 import (
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/policy"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
+	"log"
 )
+
+type Inspect struct {
+	Name  string
+	cache *cache.SchedulerCache
+	policy *policy.Policy
+}
 
 func (in Inspect) Handler(name string, detail bool) *types.InspectResult {
 	nodes := []*types.InspectNode{}
@@ -24,6 +33,8 @@ func (in Inspect) Handler(name string, detail bool) *types.InspectResult {
 		}
 		nodes = append(nodes, in.buildNode(node, detail))
 	}
+	
+	log.Printf("debug: policy name %v", in.policy.GetName())
 	
 	return &types.InspectResult{
 		Nodes: nodes,

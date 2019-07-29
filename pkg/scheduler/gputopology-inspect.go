@@ -12,10 +12,3 @@ func NewGPUTopologyInspect(c *cache.SchedulerCache, policy *policy.Policy) *Insp
 		policy: policy,
 	}
 }
-
-
-type Inspect struct {
-	Name  string
-	cache *cache.SchedulerCache
-	policy *policy.Policy
-}
