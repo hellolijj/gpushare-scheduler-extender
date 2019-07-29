@@ -119,6 +119,12 @@ func NewController(clientset *kubernetes.Clientset, kubeInformerFactory kubeinfo
 	} else {
 		log.Println("info: init the node cache successfully")
 	}
+	
+	if ok := clientgocache.WaitForCacheSync(stopCh, c.podInformerSynced); !ok {
+		return nil, fmt.Errorf("failed to wait for pod caches to sync")
+	} else {
+		log.Println("info: init the pod cache successfully")
+	}
 
 	log.Println("info: end to wait for cache")
 

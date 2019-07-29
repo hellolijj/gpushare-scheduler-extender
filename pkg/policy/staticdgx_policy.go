@@ -1,21 +1,32 @@
 package policy
 
 import (
+	"encoding/json"
 	"fmt"
-	gputype "github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
 
+	gputype "github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
+	"os"
+	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	"log"
+	"sort"
 )
 
-type staticRunner struct{}
+type staticRunner struct{
+	configPath string
+}
 
 // NewSimplePolicy creates a new SimplePolicy.
-func NewStaticRunner() Run {
-	return &staticRunner{}
+func NewStaticRunner(path string) Run {
+	if len(path) == 0 {
+		return nil
+	}
+	// TODO add more checks
+	return &staticRunner{configPath:path}
 }
 
 func (s *staticRunner) Score(n *gputype.NodeInfo, req int) (int, error) {
 	ids, _, err := s.PreAllocate(n, req)
-	if err != nil || len(ids) == 0{
+	if err != nil || len(ids) == 0 {
 		return 0, err
 	}
 
@@ -35,65 +46,97 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		err = fmt.Errorf("rqu gpu count %v is invalid", req)
 		return nil, 0, err
 	}
-
-	validSets := NodeTypeConfig()
 	
+	nodeType := utils.GetNodeTypeFromAnnotation(n.GetNode())
+	if len(nodeType) == 0 {
+		log.Printf("warn: can not get node type")
+	}
+	
+	// 构造可用 devices
 	devices := []int{}
 	for _, dev := range n.GetDevs() {
 		if dev.IsUsed() == false {
 			devices = append(devices, dev.GetDevId())
 		}
 	}
-
-	res := findGPUSet(devices, req, validSets["shenglong"][req])
-	if len(res) > 0 {
-		return res, 10, nil
+	
+	nodeConfig, err := loadNodeTypeConfig(s.configPath)
+	if err != nil {
+		return nil, 0, err
 	}
-
-	return []int{}, 0, fmt.Errorf("no is invalid gpu")
-}
-
-// Find a GPU set of size 'size' in the list of devices that is contained in 'validSets'.
-func findGPUSet(devices []int, size int, validSets [][]int) []int {
-	solutionSet := []int{}
-
-	for _, validSet := range validSets {
-		for _, i := range validSet {
-			for _, device := range devices {
-				if device == i {
-					solutionSet = append(solutionSet, device)
-					break
+	
+	validSet, ok := nodeConfig[nodeType]
+	if !ok {
+		log.Printf("warn: no avaliable gpu config %v for node type %s", validSet, nodeType)
+	}
+	
+	// 1. 找到与配置文件相同策略20分
+	validGpuSets, ok := validSet[req]
+	if ok {
+		for _, validGpuSet := range validGpuSets {
+			if isChinldSet(validGpuSet, devices) {
+				return validGpuSet, 20, nil
+			}
+		}
+	}
+	
+	// 2. 以req=3为例， req++, 如果找到 req+ 的配置策略 并且可分配，15分
+	virtualReq := req
+	for {
+		virtualReq++
+		validGpuSets, ok := validSet[virtualReq]
+		if ok {
+			for _, validGpuSet := range validGpuSets {
+				if isChinldSet(validGpuSet, devices) {
+					// 从 vailidGpuSet 中随机选择
+					return validGpuSet[0: req], 15, nil
 				}
 			}
 		}
-
-		if len(solutionSet) == size {
+		if virtualReq > len(devices) {
 			break
 		}
-
-		solutionSet = []int{}
-	}
-
-	return solutionSet
-}
-
-func NodeTypeConfig() map[string]map[int][][]int {
-	
-	validSets := make(map[string]map[int][][]int)
-	
-	shenglongValidConfig := map[int][][]int{
-		1: {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}},
-		2: {{0, 2}, {1, 3}, {4, 6}, {5, 7}},
-		4: {{0, 1, 2, 3}, {4, 5, 6, 7}},
-		8: {{0, 1, 2, 3, 4, 5, 6, 7}},
 	}
 	
-	validSets["shenglong"] = shenglongValidConfig
-	
-	return validSets
+	// 3. 随机选择
+	return devices[0: req], 10, fmt.Errorf("no is invalid gpu")
 }
+
 
 // 从配置文件中加载 node type 配置
-func loadNodeTypeConfig() {
+func loadNodeTypeConfig(path string) (map[string]map[int][][]int, error) {
+	if len(path) == 0 {
+		return nil, fmt.Errorf("config path can not be empty")
+	}
+	//TODO: ADD more check
 
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var nodeTypeConfig map[string]map[int][][]int
+
+	err = json.NewDecoder(f).Decode(&nodeTypeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("config file error: %v", f.Name())
+	}
+	
+	return nodeTypeConfig, nil
+}
+
+// child is shorter than parent
+func isChinldSet(child, parent []int) bool {
+	sort.Ints(child)
+	sort.Ints(parent)
+	if len(child) > len(parent) {
+		return false
+	}
+	for i := 0; i < len(child); i++ {
+		if child[i] != parent[i] {
+			return false
+		}
+	}
+	return true
 }

@@ -88,7 +88,6 @@ func displayDetails(res *types.InspectResult) {
 			}
 		}
 		
-		
 		if i < len(res.Nodes)-1 {
 			bufferContent.WriteString("----------------------------------------\n")
 		}

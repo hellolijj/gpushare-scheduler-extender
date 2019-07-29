@@ -102,8 +102,8 @@ func main() {
 	go controller.Run(threadness, stopCh)
 
 	policy, err := policy.NewPolicy(schedulerPolicy, config)
-	log.Printf("info: build policy %v \n", policy)
 	if err != nil {
+		log.Fatalf("Failed to log config %v", err)
 		return
 	}
 	

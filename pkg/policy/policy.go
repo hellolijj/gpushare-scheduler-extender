@@ -21,7 +21,7 @@ type Policy struct {
 func NewPolicy(name, config string) (*Policy, error) {
 	runnerPolicy := newPolicyRunner(name, config)
 	if runnerPolicy == nil || len(name) == 0 {
-		return nil, fmt.Errorf("error in policy %v", name)
+		return nil, fmt.Errorf("error in policy config name: %s config: %s", name, config)
 	}
 	
 	return &Policy{
@@ -39,7 +39,7 @@ func newPolicyRunner(name, config string) Run {
 	case "best_effort":
 		return NewBestRunner()
 	case "static":
-		return NewStaticRunner()
+		return NewStaticRunner(config)
 	default:
 	}
 	return nil
