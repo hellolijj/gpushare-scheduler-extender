@@ -56,18 +56,6 @@ func (in Inspect) buildNode(info *types.NodeInfo, detail bool) *types.InspectNod
 	
 	topology := info.GetGPUTopology()
 	log.Printf("debug: inspect origin topology: %v", topology)
-	for _, dev := range info.GetDevs() {
-		if dev.IsUsed() {
-			// 所有与devid相关的拓扑都为-1
-			for gpu0, topo := range topology {
-				for gpu1, _ := range topo {
-					if gpu0 == dev.GetDevId() || gpu1 == dev.GetDevId() {
-						topology[gpu0][gpu1] = 0      // here -1 may be more right
-					}
-				}
-			}
-		}
-	}
 	
 	// to get static config
 	// staticSet := policy.NodeTypeConfig()[utils.GetNodeTypeFromAnnotation(info.GetNode())]

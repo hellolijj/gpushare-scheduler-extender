@@ -2,15 +2,10 @@ package types
 
 import (
 	"log"
-	"strings"
 	"sync"
 
-	"encoding/json"
-	"strconv"
-
-	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
-	"k8s.io/api/core/v1"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
+	"k8s.io/api/core/v1"
 )
 
 const (
@@ -24,18 +19,8 @@ type NodeInfo struct {
 	devs        map[int]*DeviceInfo
 	gpuUsed     int
 	gpuCount    int
-	gpuTopology [][]TopologyType
+	gpuTopology Topology
 	rwmu        *sync.RWMutex
-}
-
-type TopologyType nvml.P2PLinkType
-
-func (t TopologyType) Desc() string {
-	return nvml.P2PLinkType(t).String()
-}
-
-func (t TopologyType) Abbr() string {
-	return utils.GetGPUAbbr(nvml.P2PLinkType(t))
 }
 
 // Create Node Level
@@ -46,8 +31,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 	for i := 0; i < utils.GetGPUCountInNode(node); i++ {
 		devMap[i] = newDeviceInfo(i)
 	}
-
-	gpuTopology := getGPUTopologyFromNode(node, devMap)
+	gpuTopology := NewTopology(node)
 
 	nodeInfo := &NodeInfo{
 		name:        node.Name,
@@ -64,63 +48,7 @@ func NewNodeInfo(node *v1.Node) *NodeInfo {
 	return nodeInfo
 }
 
-// 从node annotaion 里获取gpu topology
-func getGPUTopologyFromNode(node *v1.Node, devs map[int]*DeviceInfo) [][]TopologyType {
-	// init gpuTopology
-	topology := make([][]TopologyType, len(devs))
 
-	if !utils.IsGPUTopologyNode(node) {
-		return topology
-	}
-
-	for i := 0; i < len(devs); i++ {
-		topology[i] = make([]TopologyType, len(devs))
-	}
-
-	log.Printf("debug: node %s has annotation %v", node.Name, node.Annotations)
-
-	gpuTopology, ok := node.Annotations[utils.EnvGPUAnnotation]
-	if !ok {
-		return topology
-	}
-
-	gpuTopologyMap := map[string]string{}
-	json.Unmarshal([]byte(gpuTopology), &gpuTopologyMap)
-	if len(gpuTopologyMap) == 0 {
-		return topology
-	}
-
-	for k, v := range gpuTopologyMap {
-		var gpu1, gpu2 int
-		var topoAbbr string
-
-		// 使用 _ 分割获取结果。
-		gpuSplitRes := strings.Split(k, "_")
-
-		if len(gpuSplitRes) != 4 {
-			log.Printf("warn: annotation topology split error")
-			continue
-		}
-
-		topoAbbr = gpuSplitRes[1]
-		gpu1, err := strconv.Atoi(gpuSplitRes[2])
-		if err != nil {
-			log.Printf("warn: get gpu1 error: %v", err)
-			continue
-		}
-		gpu2, err = strconv.Atoi(gpuSplitRes[3])
-		if err != nil {
-			log.Printf("warn: get gpu2 error: %v", err)
-			continue
-		}
-
-		log.Printf("debug: from annotaion %s to get gputoplogy gpu%d and gpu%d 's relations is desc: %s abbr: %s", k, gpu1, gpu2, v, topoAbbr)
-		topology[gpu1][gpu2] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
-		topology[gpu2][gpu1] = TopologyType(utils.GetGPULinkFromDescAndAbbr(topoAbbr))
-	}
-
-	return topology
-}
 
 func (n *NodeInfo) GetName() string {
 	return n.name
@@ -157,6 +85,7 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) {
 	defer n.rwmu.Unlock()
 
 	ids := utils.GetGPUIDFromAnnotation(pod)
+	originTopology := getOriginGpuTopology(n.node)
 	log.Printf("warn: Pod remove ids %v", ids)
 	for _, id := range ids {
 		if id >= 0 {
@@ -165,6 +94,7 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) {
 				log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
 			} else {
 				dev.RemovePod(pod)
+				n.gpuTopology.RecoveryId(id, originTopology)
 			}
 		} else {
 			log.Printf("warn: Pod %s in ns %s is not set the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
@@ -182,13 +112,14 @@ func (n *NodeInfo) AddOrUpdatePod(pod *v1.Pod) (added bool) {
 		pod.Name,
 		pod.Namespace,
 		ids)
-	if len(ids) >= 0 {
+	if len(ids) > 0 {
 		for _, id := range ids {
 			dev, found := n.devs[id]
 			if !found {
 				log.Printf("warn: Pod %s in ns %s failed to find the GPU ID %d in node %s", pod.Name, pod.Namespace, id, n.name)
 			} else {
 				dev.AddPod(pod)
+				n.gpuTopology.ConsumeId(id)
 				added = true
 			}
 		}
@@ -235,20 +166,3 @@ func (n *NodeInfo) GetAllGPUs() (allGPUs int) {
 	log.Printf("debug: getAllGPUs: %v in node %s, and dev %v", allGPUs, n.name, n.devs)
 	return allGPUs
 }
-
-var (
-	nodeype = map[string]nvml.P2PLinkType{
-		"PSB":  1,
-		"PIX":  2,
-		"PXB":  3,
-		"PHB":  4,
-		"NODE": 5,
-		"SYS":  6,
-		"NV1":  7,
-		"NV2":  8,
-		"NV3":  9,
-		"NV4":  10,
-		"NV5":  11,
-		"NV6":  12,
-	}
-)
