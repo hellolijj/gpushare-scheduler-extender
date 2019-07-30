@@ -10,7 +10,7 @@ spec:
         image: registry.cn-hangzhou.aliyuncs.com/konnase/horovod-benchmark:ubuntu1804-cuda10.0-cudnn7.6.0.64-1-nccl2.4.7-1-py36-f3d3b95-horovod-0.16.4-tf1.14.0-torch1.1.0-mxnet1.4.1-test3
         imagePullPolicy: IfNotPresent
         resources:
-            limits:
-              aliyun.com/gpu: 4
-        command: ["sh", "./launch-example.sh", "1", "4"]  # 1 表示机器的数量， 4表示gpu的数量
+          limits:
+            aliyun.com/gpu: 2
+        command: ["./launch-example.sh", "1", "2"]  # 1 表示机器的数量， 4表示gpu的数量
       restartPolicy: Never

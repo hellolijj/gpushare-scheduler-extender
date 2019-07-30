@@ -1,12 +1,35 @@
-# gputopology 使用指导
+# gputopology 使用文档
 
 <a name="h8rFZ"></a>
 # 测试系统
+
 安装完成后，使用如下命令训练一个 gpu 任务
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/hellolijj/gpushare-scheduler-extender/gsoc/samples/test.yaml
+# kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/samples/test-gpu.yaml
 ```
+
+也可以编辑 yaml 文件
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-gpu-topology
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-gpu-topology
+        image: registry.cn-hangzhou.aliyuncs.com/konnase/horovod-benchmark:ubuntu1804-cuda10.0-cudnn7.6.0.64-1-nccl2.4.7-1-py36-f3d3b95-horovod-0.16.4-tf1.14.0-torch1.1.0-mxnet1.4.1-test3
+        imagePullPolicy: IfNotPresent
+        resources:
+            limits:
+              aliyun.com/gpu: 2
+        command: ["sh", "./launch-example.sh", "1", "2"]  # 1 表示机器的数量， 4表示gpu的数量
+      restartPolicy: Never
+```
+
 
 通过查看 log 日志。如果出现如下结果则说明任务训练完成。<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1564294376195-f6917e1b-9798-4c88-b525-9e8c35efb73a.png#align=left&display=inline&height=531&name=image.png&originHeight=1062&originWidth=1052&size=332388&status=done&width=526)
 <a name="mMBcX"></a>
@@ -73,16 +96,8 @@ metadata:
 
 <a name="uA25C"></a>
 ## 检查是否经过 topology 调度
-通过查看 node 的 annotation 字段。annotation 出现如下 ALIYUN_COM_GPU_ASSIGNED: true 则经过 topology 调度<br />
+通过查看 node 的 annotation 字段。annotation 出现如下 ALIYUN_COM_GPU_ASSIGNED: true 则经过 topology 调度
 
+![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1564480897020-0ba9478c-08e6-4088-bf70-5eff36984178.png#align=left&display=inline&height=320&name=image.png&originHeight=640&originWidth=1592&size=218473&status=done&width=796)
 
-请求 aliyun.com/gpu = 1 的调度<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562637864784-1d36b6b0-c2a8-4b24-83c6-93df9bcd0003.png#align=left&display=inline&height=534&name=image.png&originHeight=1122&originWidth=1524&size=306023&status=done&width=725)
-
-请求 aliyun.com/gpu = 2 的调度<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562772853441-8d960763-f7e8-4bc0-8f4a-d051ebf44dda.png#align=left&display=inline&height=571&name=image.png&originHeight=1142&originWidth=2142&size=388103&status=done&width=1071)
-
-
-如果没有这个字段则没有经过 topology 调度
-
-【普通调度】
-
-![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562727793947-2637e856-b0b2-492a-8d1b-5dbb77203a98.png#align=left&display=inline&height=417&name=image.png&originHeight=834&originWidth=1416&size=218765&status=done&width=708)
+如果没有这个字段则没有经过 topology ，则为普通调度<br />,![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562727793947-2637e856-b0b2-492a-8d1b-5dbb77203a98.png#align=left&display=inline&height=417&name=image.png&originHeight=834&originWidth=1416&size=218765&status=done&width=708)

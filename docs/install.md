@@ -26,8 +26,8 @@
 
 重新加载配置文件
 ```bash
-$ systemctl daemon-reload
-$ systemctl restart docker
+# systemctl daemon-reload
+# systemctl restart docker
 ```
 
 检查 docker runtime<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562773092661-01701200-756b-425a-8940-8b26fe72db40.png#align=left&display=inline&height=93&name=image.png&originHeight=186&originWidth=954&size=59640&status=done&width=477)
@@ -38,7 +38,7 @@ $ systemctl restart docker
 执行如下命令 部署 device-plugin
 
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/hellolijj/k8s-device-plugin/master/deploy/gsoc-device-plugin.yaml
+# kubectl apply -f https://github.com/hellolijj/k8s-device-plugin/raw/master/deploy/gputopology-device-plugin.yaml
 ```
 
 > ⚠️如果节点上已经安装了 nvidia-plugin 需要先将其删掉。如果是 static pod 部署模式，需要从 /etc/kubernetes/manifest 目录删除部署文件。
@@ -47,29 +47,63 @@ $ kubectl apply -f https://raw.githubusercontent.com/hellolijj/k8s-device-plugin
 ## 1.3 给节点打标签使支持gpu topology
 
 ```yaml
-$ kubectl label node <target_node> gputopology=true
+# kubectl label node <target_node> gputopology=true
 ```
 
 <a name="sa3Zz"></a>
 ## 1.4 验证 
 
 ```bash
-$ kubectl get pods --all-namespaces -o wide | grep device
+[root@iZ8vbazwei4j05nbediqaeZ lijj]# kubectl get pods --all-namespaces -o wide -w | grep device
+kube-system    gputopology-device-plugin-ds-c652q                     1/1     Running     0          47h     192.168.0.112   cn-zhangjiakou.192.168.0.112   <none>
+kube-system    gputopology-device-plugin-ds-mh7k9                     1/1     Running     0          47h     192.168.0.113   cn-zhangjiakou.192.168.0.113   <none>
+kube-system    nvidia-device-plugin-cn-zhangjiakou.192.168.0.112      1/1     Running     6          15d     192.168.0.112   cn-zhangjiakou.192.168.0.112   <none>
+kube-system    nvidia-device-plugin-cn-zhangjiakou.192.168.0.113      1/1     Running     4          19d     192.168.0.113   cn-zhangjiakou.192.168.0.113   <none>
 ```
 
-执行以上命令，出现如下情况，则部署成功<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562761440914-7b362d10-b3af-46cb-8dde-a63c2aa192d6.png#align=left&display=inline&height=75&name=image.png&originHeight=150&originWidth=2300&size=88389&status=done&width=1150)
+执行以上命令，出现如下情况，则部署成功<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1564472587692-311f29d0-d0dd-4a1c-b43b-30b90ef5b347.png#align=left&display=inline&height=96&name=image.png&originHeight=192&originWidth=2336&size=156400&status=done&width=1168)
 <a name="DRRfR"></a>
 ###
 <a name="SCz2t"></a>
 # 2. 安装 gputopology-scheduele-extender 
 
 <a name="ZgJR2"></a>
+## 2.1 部署 static-policy 策略
+
+```json
+{
+  "ecs.sccgn6.24xlarge": {
+    "1": [
+      [0], [1], [2], [3], [4], [5], [6], [7]
+    ],
+    "2": [
+      [0, 2],
+      [1, 3],
+      [4, 6],
+      [5, 7]
+    ],
+    "4": [
+      [0, 1, 2, 3],
+      [4, 5, 6, 7]
+    ],
+    "8": [
+      [0, 1, 2, 3, 4, 5, 6, 7]
+    ]
+  }
+}
+```
+
+```bash
+# curl -o /etc/kubernetes/static-node.json https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/static-node.json
+```
+
+<a name="2qrue"></a>
 ## 2.1 部署 gputopology-scheduler-extender
 
 执行以下命令，部署 gputopology-scheduler-extender
 
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gpu-schd-extender.yaml
+# kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gputopology-schd-extender.yaml
 ```
 
 > TODO: extender 类型 deployment 改为 daemonset。或者 replicas 改为 master节点个数。
@@ -77,7 +111,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-sched
 
 <a name="rWjpe"></a>
 ## [](https://www.yuque.com/lijunjun-bjkm9/rwyxlc/quqwog#EJleN)2.2 master 节点上配置 scheduler extender 策略
-编辑 scheduler-extender 配置文件于 /etc/kubernetes/gsoc-scheduler-policy-config.json
+编辑 scheduler-extender 配置文件于 /etc/kubernetes/gputopology-scheduler-policy-config.json
 ```json
 {
   "kind": "Policy",
@@ -92,7 +126,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-sched
     {
       "urlPrefix": "http://127.0.0.1:32743/gputopology-scheduler",
       "PrioritizeVerb": "sort",
-      "weight": 1,
+      "weight": 4,
       "bindVerb":   "bind",
       "enableHttps": false,
       "nodeCacheCapable": true,
@@ -109,7 +143,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/hellolijj/gputopology-sched
 ```
 或者执行以下命令
 ```bash
-$ curl -o /etc/kubernetes/gsoc-scheduler-policy-config.json https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gsoc-scheduler-policy-config.json
+# curl -o /etc/kubernetes/gputopology-scheduler-policy-config.json https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/gputopology-scheduler-policy-config.json
 ```
 
 
@@ -137,7 +171,7 @@ spec:
     - --address=127.0.0.1
     - --kubeconfig=/etc/kubernetes/scheduler.conf
     - --leader-elect=true
-    - --policy-config-file=/etc/kubernetes/gsoc-scheduler-policy-config.json
+    - --policy-config-file=/etc/kubernetes/gputopology-scheduler-policy-config.json
     - -v=4
     image: registry-vpc.cn-shanghai.aliyuncs.com/acs/kube-scheduler:v1.12.6-aliyun.1
     imagePullPolicy: IfNotPresent
@@ -161,7 +195,7 @@ spec:
     - mountPath: /etc/localtime
       name: localtime
       readOnly: true
-    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
+    - mountPath: /etc/kubernetes/gputopology-scheduler-policy-config.json
       name: scheduler-policy-config
       readOnly: true
   hostNetwork: true
@@ -176,7 +210,7 @@ spec:
       type: FileOrCreate
     name: kubeconfig
   - hostPath:
-      path: /etc/kubernetes/gsoc-scheduler-policy-config.json
+      path: /etc/kubernetes/gputopology-scheduler-policy-config.json
       type: FileOrCreate
     name: scheduler-policy-config
 status: {}
@@ -187,7 +221,7 @@ status: {}
 
 也可以通过以下命令安装。
 ```bash
-  $ curl -o /etc/kubernetes/manifests/kube-scheduler.yaml https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/kube-scheduler.yaml
+# curl -o /etc/kubernetes/manifests/kube-scheduler.yaml https://raw.githubusercontent.com/hellolijj/gputopology-scheduler-extender/master/config/kube-scheduler.yaml
 ```
 
 > 重启 scheduler 的过程，及 配置 scheudler 策略文件需要在每一个 master 节点上执行。
@@ -199,7 +233,7 @@ status: {}
 ## 2.4 验证
 
 ```bash
-$ kubectl get pods --all-namespaces | grep cheduler
+$ kubectl get pods --all-namespaces | grep scheduler
 ```
 
 执行以上命令，出现如下情况，则部署成功。<br />![image.png](https://cdn.nlark.com/yuque/0/2019/png/394957/1562762437400-9817d044-90ef-445d-8709-e2638b63f1fa.png#align=left&display=inline&height=209&name=image.png&originHeight=418&originWidth=1536&size=254619&status=done&width=768)

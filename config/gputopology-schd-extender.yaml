@@ -96,8 +96,8 @@ spec:
           command:
             - gputopology-schd-extender
             - -policy
-            - best_effort
-            - config
+            - static
+            - -config
             - /etc/kubernetes/static-node.json
           env:
           - name: LOG_LEVEL
