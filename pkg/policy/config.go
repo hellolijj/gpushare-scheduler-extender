@@ -2,7 +2,6 @@ package policy
 
 import (
 	"log"
-
 	
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"

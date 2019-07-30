@@ -3,15 +3,17 @@ package policy
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"sort"
 
 	gputype "github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/types"
-	"os"
 	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/utils"
-	"log"
-	"sort"
+
+	"k8s.io/api/core/v1"
 )
 
-type staticRunner struct{
+type staticRunner struct {
 	configPath string
 }
 
@@ -21,7 +23,7 @@ func NewStaticRunner(path string) Run {
 		return nil
 	}
 	// TODO add more checks
-	return &staticRunner{configPath:path}
+	return &staticRunner{configPath: path}
 }
 
 func (s *staticRunner) Score(n *gputype.NodeInfo, req int) (int, error) {
@@ -46,12 +48,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 		err = fmt.Errorf("rqu gpu count %v is invalid", req)
 		return nil, 0, err
 	}
-	
-	nodeType := utils.GetNodeTypeFromAnnotation(n.GetNode())
-	if len(nodeType) == 0 {
-		log.Printf("warn: can not get node type")
-	}
-	
+
 	// 构造可用 devices
 	devices := []int{}
 	for _, dev := range n.GetDevs() {
@@ -59,20 +56,11 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 			devices = append(devices, dev.GetDevId())
 		}
 	}
-	
-	nodeConfig, err := loadNodeTypeConfig(s.configPath)
-	log.Printf("debug: get nodeconfig: %v", nodeConfig)
-	if err != nil {
-		return nil, 0, err
-	}
-	
-	validSet, ok := nodeConfig[nodeType]
-	if !ok {
-		log.Printf("warn: no avaliable gpu config %v for node type %s", validSet, nodeType)
-	}
-	log.Printf("debug: get valid set: %v", validSet)
 	log.Printf("debug: get devices: %v", devices)
-	
+
+	validSet := s.GetStaticConfig(n.GetNode())
+	log.Printf("debug: get valid set: %v", validSet)
+
 	// 1. 找到与配置文件相同策略20分
 	validGpuSets, ok := validSet[req]
 	if ok {
@@ -86,7 +74,7 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 	} else {
 		log.Println("debug: unable to get validGpuSets")
 	}
-	
+
 	// 2. 以req=3为例， req++, 如果找到 req+ 的配置策略 并且可分配，15分
 	virtualReq := req
 	for {
@@ -105,12 +93,31 @@ func (s *staticRunner) PreAllocate(n *gputype.NodeInfo, req int) (ids []int, sco
 			break
 		}
 	}
-	
+
 	// 3. 随机选择
 	log.Printf("info: choose a random schem %v", devices[:req])
 	return devices[:req], 10, fmt.Errorf("no is invalid gpu")
 }
 
+func (s *staticRunner) GetStaticConfig(n *v1.Node) map[int][][]int {
+	nodeType := utils.GetNodeTypeFromAnnotation(n)
+	if len(nodeType) == 0 {
+		log.Printf("warn: can not get node type")
+		return nil
+	}
+	nodeConfig, err := loadNodeTypeConfig(s.configPath)
+	log.Printf("debug: get nodeconfig: %v", nodeConfig)
+	if err != nil {
+		return nil
+	}
+
+	validSet, ok := nodeConfig[nodeType]
+	if !ok {
+		log.Printf("warn: no avaliable gpu config %v for node type %s", validSet, nodeType)
+		return nil
+	}
+	return validSet
+}
 
 // 从配置文件中加载 node type 配置
 func loadNodeTypeConfig(path string) (map[string]map[int][][]int, error) {
@@ -131,7 +138,7 @@ func loadNodeTypeConfig(path string) (map[string]map[int][][]int, error) {
 	if err != nil {
 		return nil, fmt.Errorf("config file error: %v", f.Name())
 	}
-	
+
 	return nodeTypeConfig, nil
 }
 

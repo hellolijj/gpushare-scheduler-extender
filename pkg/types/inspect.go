@@ -11,10 +11,10 @@ type InspectResult struct {
 }
 
 type InspectNode struct {
-	Name       string              `json:"name"`
-	TotalGPU   int                 `json:"totalGPU"`
-	UsedGPU    int                 `json:"usedGPU"`
-	Topology   [][]TopologyType    `json:"topology,omitempty"`
-	NodeType   string              `json:"type,omitempty"`
-	Static     map[int][][]int     `json:"static,omitempty"`
+	Name         string              `json:"name"`
+	TotalGPU     int                 `json:"totalGPU"`
+	UsedGPU      int                 `json:"usedGPU"`
+	Topology     [][]TopologyType    `json:"topology,omitempty"`
+	NodeType     string               `json:"type,omitempty"`
+	StaticConfig map[int][][]int     `json:"staticConfig,omitempty"`
 }

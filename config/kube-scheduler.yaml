@@ -16,7 +16,7 @@ spec:
     - --address=127.0.0.1
     - --kubeconfig=/etc/kubernetes/scheduler.conf
     - --leader-elect=true
-    - --policy-config-file=/etc/kubernetes/gsoc-scheduler-policy-config.json
+    - --policy-config-file=/etc/kubernetes/gputopology-scheduler-policy-config.json
     - -v=4
     image: registry.cn-hangzhou.aliyuncs.com/acs/kube-scheduler-amd64:v1.11.2
     imagePullPolicy: IfNotPresent
@@ -40,7 +40,7 @@ spec:
     - mountPath: /etc/localtime
       name: localtime
       readOnly: true
-    - mountPath: /etc/kubernetes/gsoc-scheduler-policy-config.json
+    - mountPath: /etc/kubernetes/gputopology-scheduler-policy-config.json
       name: scheduler-policy-config
       readOnly: true
   hostNetwork: true
@@ -55,7 +55,7 @@ spec:
       type: FileOrCreate
     name: kubeconfig
   - hostPath:
-      path: /etc/kubernetes/gsoc-scheduler-policy-config.json
+      path: /etc/kubernetes/gputopology-scheduler-policy-config.json
       type: FileOrCreate
     name: scheduler-policy-config
 status: {}
